@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/lysShub/sockit/errorx"
+	"github.com/lysShub/netkit/errorx"
 )
 
 func Test_Loggeer(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/lysShub/sockit/errorx"
+	"github.com/lysShub/netkit/errorx"
 	"github.com/stretchr/testify/require"
 )
 
