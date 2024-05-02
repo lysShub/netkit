@@ -1,0 +1,5 @@
+/*
+	rDNS
+*/
+
+package domain
