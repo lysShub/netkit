@@ -138,7 +138,7 @@ func (b *BindPcap) write(src, dst netip.Addr, proto tcpip.TransportProtocolNumbe
 
 	ip.Encode(&header.IPv4Fields{
 		TOS:            0,
-		TotalLength:    uint16(len(p)),
+		TotalLength:    uint16(len(ip)),
 		ID:             0,
 		Flags:          0,
 		FragmentOffset: 0,
