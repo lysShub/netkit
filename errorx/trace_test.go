@@ -14,13 +14,13 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func Test_Loggeer(t *testing.T) {
+func Test_Trace(t *testing.T) {
 	{
 		b := bytes.NewBuffer(nil)
 		l := slog.New(slog.NewJSONHandler(b, nil))
 
 		err := c()
-		l.LogAttrs(context.TODO(), slog.LevelError, err.Error(), errorx.TraceAttr(err))
+		l.LogAttrs(context.TODO(), slog.LevelError, err.Error(), errorx.Trace(err))
 		out := b.String()
 
 		res1 := gjson.Get(out, "trace.0")
@@ -41,7 +41,7 @@ func Test_Loggeer(t *testing.T) {
 		l := slog.New(slog.NewJSONHandler(b, nil))
 
 		err := c()
-		l.Error(err.Error(), errorx.TraceAttr(err))
+		l.Error(err.Error(), errorx.Trace(err))
 		out := b.String()
 
 		res1 := gjson.Get(out, "trace.0")
@@ -62,7 +62,7 @@ func Test_Loggeer(t *testing.T) {
 		l := slog.New(slog.NewJSONHandler(b, nil))
 
 		err := stderr.New("xxx")
-		l.Error(err.Error(), errorx.TraceAttr(err))
+		l.Error(err.Error(), errorx.Trace(err))
 		out := b.String()
 
 		res1 := gjson.Get(out, "trace.0")
@@ -78,7 +78,7 @@ func Test_Loggeer(t *testing.T) {
 		l := slog.New(slog.NewJSONHandler(b, nil))
 
 		var err error = nil
-		l.Error("nil", errorx.TraceAttr(err))
+		l.Error("nil", errorx.Trace(err))
 		out := b.String()
 
 		res1 := gjson.Get(out, "trace.0")
@@ -88,6 +88,16 @@ func Test_Loggeer(t *testing.T) {
 		res2 := gjson.Get(out, "trace.1")
 		require.Equal(t, gjson.Null, res2.Type)
 	}
+}
+
+func Test_CallTrace(t *testing.T) {
+	b := bytes.NewBuffer(nil)
+	l := slog.New(slog.NewJSONHandler(b, nil))
+
+	l.Error("xxx", errorx.CallTrace())
+	out := b.String()
+
+	require.Contains(t, out, "testing.go")
 }
 
 func c() error {

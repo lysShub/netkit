@@ -10,6 +10,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcapgo"
+	"github.com/lysShub/netkit/packet"
 	"github.com/pkg/errors"
 	"gvisor.dev/gvisor/pkg/tcpip"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
@@ -91,7 +92,7 @@ func (p *Pcap) Write(eth header.Ethernet) error {
 
 func (p *Pcap) WriteIP(ip []byte) error {
 	var eth []byte
-	switch header.IPVersion(ip) {
+	switch ver := header.IPVersion(ip); ver {
 	case 4:
 		eth = append(eth,
 			[]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x08, 0x00}...,
@@ -100,10 +101,26 @@ func (p *Pcap) WriteIP(ip []byte) error {
 		eth = append(eth,
 			[]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x86, 0xdd}...,
 		)
+	default:
+		return errors.Errorf("not support ip version %d", ver)
 	}
 	eth = append(eth, ip...)
 
 	return p.write(eth)
+}
+
+func (p *Pcap) WritePacket(ip *packet.Packet) error {
+	defer ip.DetachN(header.EthernetMinimumSize)
+
+	switch ver := header.IPVersion(ip.Bytes()); ver {
+	case 4:
+		ip.Attach([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x08, 0x00})
+	case 6:
+		ip.Attach([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x86, 0xdd})
+	default:
+		return errors.Errorf("not support ip version %d", ver)
+	}
+	return p.write(ip.Bytes())
 }
 
 type BindPcap struct {
@@ -152,4 +169,29 @@ func (b *BindPcap) write(src, dst netip.Addr, proto tcpip.TransportProtocolNumbe
 	ip.SetChecksum(^ip.CalculateChecksum())
 
 	return b.Pcap.WriteIP(ip)
+}
+
+func (b *BindPcap) WritePacket(src, dst netip.Addr, proto tcpip.TransportProtocolNumber, pkt *packet.Packet) error {
+	if !src.Is4() {
+		return errors.New("only support ipv4")
+	}
+
+	defer pkt.DetachN(header.IPv4MinimumSize)
+	ip := header.IPv4(pkt.AttachN(header.IPv4MinimumSize).Bytes())
+	ip.Encode(&header.IPv4Fields{
+		TOS:            0,
+		TotalLength:    uint16(len(ip)),
+		ID:             0,
+		Flags:          0,
+		FragmentOffset: 0,
+		TTL:            64,
+		Protocol:       uint8(proto),
+		Checksum:       0,
+		SrcAddr:        tcpip.AddrFrom4(src.As4()),
+		DstAddr:        tcpip.AddrFrom4(dst.As4()),
+		Options:        nil,
+	})
+	ip.SetChecksum(^ip.CalculateChecksum())
+
+	return b.Pcap.WritePacket(pkt)
 }

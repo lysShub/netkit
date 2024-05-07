@@ -9,12 +9,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TraceAttr get github.com/pkg/errors stack trace as slog.Attr
+// Trace get github.com/pkg/errors stack trace as slog.Attr
 //
 // Example:
 //
-//	slog.Error(err.Error(), xerr.TraceAttr(err))
-func TraceAttr(err error) slog.Attr {
+//	slog.Error(err.Error(), xerr.Trace(err))
+func Trace(err error) slog.Attr {
 	type trace interface{ StackTrace() errors.StackTrace }
 
 	// only hit innermost trace
@@ -50,6 +50,20 @@ func TraceAttr(err error) slog.Attr {
 		})
 	}
 
+	return slog.Attr{Key: "trace", Value: slog.GroupValue(attrs...)}
+}
+
+func CallTrace() slog.Attr {
+	var attrs []slog.Attr
+
+	var pcs = make([]uintptr, 32)
+	pcs = pcs[:runtime.Callers(2, pcs)]
+	for _, e := range pcs {
+		attrs = append(attrs, slog.Attr{
+			Key:   strconv.Itoa(len(attrs)),
+			Value: position(errors.Frame(e)),
+		})
+	}
 	return slog.Attr{Key: "trace", Value: slog.GroupValue(attrs...)}
 }
 

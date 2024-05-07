@@ -1,9 +1,11 @@
 package packet
 
 import (
+	"log/slog"
 	"math"
 
 	"github.com/lysShub/netkit/debug"
+	"github.com/lysShub/netkit/errorx"
 )
 
 type Packet struct {
@@ -69,7 +71,7 @@ func (p *Packet) SetHead(head int) *Packet {
 
 func (p *Packet) SetData(data int) *Packet {
 	if debug.Debug() && data == math.MaxInt {
-		println("overflow warning")
+		slog.Warn("overflow warning", errorx.CallTrace())
 	}
 
 	p.b = p.b[:min(p.Head()+max(data, 0), cap(p.b))]
@@ -95,7 +97,7 @@ func (p *Packet) AttachN(n int) *Packet {
 		p.i = head
 	} else {
 		if debug.Debug() {
-			println("packet memory alloc")
+			slog.Warn("packet memory alloc", errorx.CallTrace())
 		}
 
 		size := len(p.b) - head + DefaulfHead
@@ -127,7 +129,7 @@ func (p *Packet) Append(b []byte) *Packet {
 
 func (p *Packet) AppendN(n int) *Packet {
 	if debug.Debug() && n == math.MaxInt {
-		println("overflow warning")
+		slog.Warn("overflow warning", errorx.CallTrace())
 	}
 
 	size := max(n, 0) + len(p.b)
@@ -135,7 +137,7 @@ func (p *Packet) AppendN(n int) *Packet {
 		p.b = p.b[:size]
 	} else {
 		if debug.Debug() {
-			println("packet memory alloc")
+			slog.Warn("packet memory alloc", errorx.CallTrace())
 		}
 
 		tmp := make([]byte, size, size+DefaulfTail)
