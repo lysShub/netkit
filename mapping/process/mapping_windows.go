@@ -4,12 +4,14 @@
 package process
 
 import (
+	"fmt"
+	"net/netip"
 	"os"
 	"slices"
 	"sync/atomic"
 
 	"github.com/pkg/errors"
-	"gvisor.dev/gvisor/pkg/tcpip/header"
+	"golang.org/x/sys/windows"
 )
 
 type mapping struct {
@@ -23,11 +25,11 @@ var _ Mapping = (*mapping)(nil)
 
 func newMapping() (*mapping, error) {
 	var m = &mapping{
-		tcp: newTable(header.TCPProtocolNumber),
-		udp: newTable(header.UDPProtocolNumber),
+		tcp: newTable(windows.IPPROTO_TCP),
+		udp: newTable(windows.IPPROTO_UDP),
 	}
-	// m.query(Endpoint{Proto: header.UDPProtocolNumber})
-	// m.query(Endpoint{Proto: header.TCPProtocolNumber})
+	// m.query(Endpoint{Proto: windows.IPPROTO_UDP})
+	// m.query(Endpoint{Proto: windows.IPPROTO_TCP})
 	return m, nil
 }
 
@@ -42,10 +44,10 @@ func (m *mapping) close(cause error) error {
 	return *m.closeErr.Load()
 }
 
-func (m *mapping) query(ep ID) (elem, error) {
-	switch ep.Proto {
-	case header.TCPProtocolNumber:
-		e := m.tcp.Query(ep.Local)
+func (m *mapping) query(laddr netip.AddrPort, proto uint8) (elem, error) {
+	switch proto {
+	case windows.IPPROTO_TCP:
+		e := m.tcp.Query(laddr)
 		if e.valid() {
 			return e, nil
 		}
@@ -54,13 +56,13 @@ func (m *mapping) query(ep ID) (elem, error) {
 			return elem{}, err
 		}
 
-		e = m.tcp.Query(ep.Local)
+		e = m.tcp.Query(laddr)
 		if e.valid() {
 			return e, nil
 		}
-		return elem{}, nil // not record
-	case header.UDPProtocolNumber:
-		e := m.udp.Query(ep.Local)
+		return elem{}, ErrNotRecord{}
+	case windows.IPPROTO_UDP:
+		e := m.udp.Query(laddr)
 		if e.valid() {
 			return e, nil
 		}
@@ -69,27 +71,27 @@ func (m *mapping) query(ep ID) (elem, error) {
 			return elem{}, err
 		}
 
-		e = m.udp.Query(ep.Local)
+		e = m.udp.Query(laddr)
 		if e.valid() {
 			return e, nil
 		}
-		return elem{}, nil // not record
+		return elem{}, ErrNotRecord{}
 	default:
-		return elem{}, errors.Errorf("not support protocol %s", protoStr(ep.Proto))
+		return elem{}, errors.Errorf("not support protocol %s", protoStr(proto))
 	}
 
 }
 
-func (m *mapping) Name(ep ID) (string, error) {
-	if e, err := m.query(ep); err != nil {
+func (m *mapping) Name(laddr netip.AddrPort, proto uint8) (string, error) {
+	if e, err := m.query(laddr, proto); err != nil {
 		return "", err
 	} else {
 		return e.name, nil
 	}
 }
 
-func (m *mapping) Pid(ep ID) (uint32, error) {
-	if e, err := m.query(ep); err != nil {
+func (m *mapping) Pid(laddr netip.AddrPort, proto uint8) (uint32, error) {
+	if e, err := m.query(laddr, proto); err != nil {
 		return 0, err
 	} else {
 		return e.pid, nil
@@ -112,3 +114,18 @@ func (m *mapping) Names() []string {
 	return slices.Compact(names)
 }
 func (m *mapping) Close() error { return m.close(nil) }
+
+func protoStr(proto uint8) string {
+	switch proto {
+	case windows.IPPROTO_TCP:
+		return "tcp"
+	case windows.IPPROTO_UDP:
+		return "udp"
+	case windows.IPPROTO_ICMP:
+		return "icmp"
+	case windows.IPPROTO_ICMPV6:
+		return "icmp6"
+	default:
+		return fmt.Sprintf("unknown(%d)", int(proto))
+	}
+}

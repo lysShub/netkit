@@ -10,12 +10,11 @@ import (
 	"github.com/pkg/errors"
 	pnet "github.com/shirou/gopsutil/v3/net"
 	"github.com/shirou/gopsutil/v3/process"
-	"gvisor.dev/gvisor/pkg/tcpip"
 )
 
 type table struct {
 	mu    sync.RWMutex
-	proto tcpip.TransportProtocolNumber
+	proto uint8
 	elems []elem // asc by port
 }
 
@@ -28,7 +27,7 @@ type elem struct {
 
 func (e elem) valid() bool { return e.pid != 0 }
 
-func newTable(proto tcpip.TransportProtocolNumber) *table {
+func newTable(proto uint8) *table {
 	return &table{
 		proto: proto,
 		elems: make([]elem, 0, 16),
