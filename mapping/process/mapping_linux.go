@@ -4,8 +4,9 @@
 package process
 
 import (
-	"unix"
 	"fmt"
+
+	"golang.org/x/sys/unix"
 )
 
 type mapping struct{}
