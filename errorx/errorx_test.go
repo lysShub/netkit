@@ -10,7 +10,7 @@ import (
 )
 
 func Test_ShortBuff(t *testing.T) {
-	err := errorx.ShortBuff(1)
+	err := errorx.ShortBuff(1, 2)
 
 	require.True(t, errors.Is(err, io.ErrShortBuffer))
 	require.True(t, errorx.Temporary(err))

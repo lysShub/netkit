@@ -6,10 +6,9 @@ package process
 import (
 	"fmt"
 	"net/netip"
-	"os"
 	"slices"
-	"sync/atomic"
 
+	"github.com/lysShub/netkit/errorx"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/windows"
 )
@@ -18,7 +17,7 @@ type mapping struct {
 	tcp *table
 	udp *table
 
-	closeErr atomic.Pointer[error]
+	closeErr errorx.CloseErr
 }
 
 var _ Mapping = (*mapping)(nil)
@@ -34,14 +33,11 @@ func newMapping() (*mapping, error) {
 }
 
 func (m *mapping) close(cause error) error {
-	if m.closeErr.CompareAndSwap(nil, &os.ErrClosed) {
+	return m.closeErr.Close(func() (errs []error) {
+		errs = append(errs, cause)
 
-		if cause != nil {
-			m.closeErr.Store(&cause)
-		}
-		return cause
-	}
-	return *m.closeErr.Load()
+		return errs
+	})
 }
 
 func (m *mapping) query(laddr netip.AddrPort, proto uint8) (elem, error) {
