@@ -25,7 +25,6 @@ func GetTable() (table Table, err error) {
 	var ifs = map[uint32]*winipcfg.MibIPInterfaceRow{}
 	for _, e := range rows {
 		next := e.NextHop.Addr()
-		// https://learn.microsoft.com/en-us/windows/win32/api/netioapi/ns-netioapi-mib_ipforward_row2
 		if next.IsUnspecified() {
 			next = netip.Addr{}
 		}
@@ -41,6 +40,7 @@ func GetTable() (table Table, err error) {
 			}
 			ifs[e.InterfaceIndex] = i
 		}
+		// https://learn.microsoft.com/en-us/windows/win32/api/netioapi/ns-netioapi-mib_ipforward_row2
 		e.Metric += i.Metric
 
 		table = append(table, Entry{
