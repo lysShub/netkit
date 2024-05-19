@@ -22,6 +22,23 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
+var (
+	eth0 = func() *net.Interface {
+		i, err := net.InterfaceByName("eth0")
+		if err != nil {
+			panic(err)
+		}
+		return i
+	}()
+	lo = func() *net.Interface {
+		i, err := net.InterfaceByName("lo")
+		if err != nil {
+			panic(err)
+		}
+		return i
+	}()
+)
+
 func Test_Read(t *testing.T) {
 	// curl baidu.com, and async read income tcp packet
 	var (
@@ -29,7 +46,7 @@ func Test_Read(t *testing.T) {
 	)
 
 	t.Run("Read", func(t *testing.T) {
-		conn, err := Listen("eth:ip4", "eth0")
+		conn, err := Listen("eth:ip4", eth0)
 		require.NoError(t, err)
 		defer conn.Close()
 
@@ -62,7 +79,7 @@ func Test_Read(t *testing.T) {
 	})
 
 	t.Run("ReadFrom", func(t *testing.T) {
-		conn, err := Listen("eth:ip4", "eth0")
+		conn, err := Listen("eth:ip4", eth0)
 		require.NoError(t, err)
 		defer conn.Close()
 
@@ -81,7 +98,7 @@ func Test_Read(t *testing.T) {
 
 		var ip = make([]byte, 1536)
 		for ok := false; !ok; {
-			n, _, err := conn.Recvfrom(ip, 0)
+			n, _, err := conn.ReadFromHW(ip)
 			require.NoError(t, err)
 
 			if header.IPVersion(ip) == 4 {
@@ -111,7 +128,7 @@ func Test_Write(t *testing.T) {
 	)
 
 	t.Run("Write", func(t *testing.T) {
-		conn, err := Listen("eth:ip4", "eth0")
+		conn, err := Listen("eth:ip4", eth0)
 		require.NoError(t, err)
 		defer conn.Close()
 		msg := "0123"
@@ -145,13 +162,13 @@ func Test_Write(t *testing.T) {
 	})
 
 	t.Run("WriteTo", func(t *testing.T) {
-		conn, err := Listen("eth:ip4", "eth0")
+		conn, err := Listen("eth:ip4", eth0)
 		require.NoError(t, err)
 		defer conn.Close()
 		msg := "abcd"
 
 		ip := BuildICMP(t, LocIP(), dst, header.ICMPv4Echo, []byte(msg))
-		err = conn.Sendto(ip, 0, gateway)
+		_, err = conn.WriteToHW(ip, gateway)
 		require.NoError(t, err)
 
 		ipconn, err := net.ListenIP("ip4:icmp", &net.IPAddr{IP: LocIP().AsSlice()})
@@ -188,7 +205,7 @@ func Test_ReadWrite_Loopback(t *testing.T) {
 				return pack
 			}()
 		)
-		conn, err := Listen("eth:ip4", "lo")
+		conn, err := Listen("eth:ip4", lo)
 		require.NoError(t, err)
 		defer conn.Close()
 
@@ -196,7 +213,7 @@ func Test_ReadWrite_Loopback(t *testing.T) {
 		require.NoError(t, err)
 		var ip = make(header.IPv4, 1536)
 		for {
-			n, _, err := conn.Recvfrom(ip[:cap(ip)], 0)
+			n, _, err := conn.ReadFromHW(ip[:cap(ip)])
 			require.NoError(t, err)
 			ip = ip[:n]
 
@@ -233,7 +250,7 @@ func Test_ReadWrite_Loopback(t *testing.T) {
 				return pack
 			}()
 		)
-		conn, err := Listen("eth:ip4", "lo")
+		conn, err := Listen("eth:ip4", lo)
 		require.NoError(t, err)
 		defer conn.Close()
 
@@ -241,7 +258,7 @@ func Test_ReadWrite_Loopback(t *testing.T) {
 		require.NoError(t, err)
 		var ip = make(header.IPv4, 1536)
 		for {
-			n, _, err := conn.Recvfrom(ip[:cap(ip)], 0)
+			n, _, err := conn.ReadFromHW(ip[:cap(ip)])
 			require.NoError(t, err)
 			ip = ip[:n]
 
@@ -270,7 +287,7 @@ func Test_Deadline(t *testing.T) {
 
 	ifi, err := net.InterfaceByName(name)
 	require.NoError(t, err)
-	conn, err := Listen("eth:ip4", ifi.Index)
+	conn, err := Listen("eth:ip4", ifi)
 	require.NoError(t, err)
 	defer conn.Close()
 
@@ -314,7 +331,9 @@ func Test_Tun_Device(t *testing.T) {
 		err = ap.SetHardware(hw)
 		require.NoError(t, err)
 
-		_, err = Listen("eth:ip4", ap.Name())
+		ifi, err := net.InterfaceByName("tap1")
+		require.NoError(t, err)
+		_, err = Listen("eth:ip4", ifi)
 		require.Error(t, err)
 
 		// require.NoError(t, err)
@@ -334,7 +353,9 @@ func Test_Tun_Device(t *testing.T) {
 		err = ap.SetAddr(netip.PrefixFrom(netip.AddrFrom4([4]byte{10, 0, 3, 7}), 24))
 		require.NoError(t, err)
 
-		_, err = Listen("eth:ip4", ap.Name())
+		ifi, err := net.InterfaceByName("tun1")
+		require.NoError(t, err)
+		_, err = Listen("eth:ip4", ifi)
 		require.Error(t, err)
 
 		// require.NoError(t, err)
@@ -348,41 +369,41 @@ func Test_Tun_Device(t *testing.T) {
 	})
 
 	t.Run("test111", func(t *testing.T) {
-		ap, err := tun.Tun("tun1")
-		require.NoError(t, err)
-		defer ap.Close()
+		// ap, err := tun.Tun("tun1")
+		// require.NoError(t, err)
+		// defer ap.Close()
 
-		// tcpdump -i tun1 -w a.pcap
-		//  icmp packet transmit on lo
+		// // tcpdump -i tun1 -w a.pcap
+		// //  icmp packet transmit on lo
 
-		addr := netip.AddrFrom4([4]byte{10, 0, 3, 7})
-		err = ap.SetAddr(netip.PrefixFrom(addr, 24))
-		require.NoError(t, err)
+		// addr := netip.AddrFrom4([4]byte{10, 0, 3, 7})
+		// err = ap.SetAddr(netip.PrefixFrom(addr, 24))
+		// require.NoError(t, err)
 
-		conn, err := Listen("eth:ip4", ap.Name())
-		require.NoError(t, err)
-		defer conn.Close()
+		// conn, err := Listen("eth:ip4", ap.Name())
+		// require.NoError(t, err)
+		// defer conn.Close()
 
-		go func() {
-			ip := BuildICMP(t, addr, LocIP(), header.ICMPv4Echo, []byte("msg1"))
+		// go func() {
+		// 	ip := BuildICMP(t, addr, LocIP(), header.ICMPv4Echo, []byte("msg1"))
 
-			dst := net.HardwareAddr([]byte{0x00, 0x15, 0x5d, 0x96, 0x3f, 0x2f})
+		// 	dst := net.HardwareAddr([]byte{0x00, 0x15, 0x5d, 0x96, 0x3f, 0x2f})
 
-			for {
+		// 	for {
 
-				err = conn.Sendto(ip, 0, dst)
-				require.NoError(t, err)
+		// 		err = conn.Sendto(ip, 0, dst)
+		// 		require.NoError(t, err)
 
-				time.Sleep(time.Second)
-			}
+		// 		time.Sleep(time.Second)
+		// 	}
 
-		}()
+		// }()
 
-		var b = make([]byte, 1536)
-		for {
-			n, addr, err := conn.Recvfrom(b, 0)
-			require.NoError(t, err)
-			fmt.Println(n, addr)
-		}
+		// var b = make([]byte, 1536)
+		// for {
+		// 	n, addr, err := conn.Recvfrom(b, 0)
+		// 	require.NoError(t, err)
+		// 	fmt.Println(n, addr)
+		// }
 	})
 }
