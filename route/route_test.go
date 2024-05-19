@@ -12,12 +12,12 @@ import (
 )
 
 func TestXxxx(t *testing.T) {
-	rs, err := route.GetTable()
+	table, err := route.GetTable()
 	require.NoError(t, err)
 
-	// entry, err := rs.MatchRoot(netip.MustParseAddr("8.8.8.8"))
-	// require.NoError(t, err)
-	fmt.Println(rs.String())
+	entry := table.Match(netip.IPv4Unspecified())
+	require.True(t, entry.Valid())
+	fmt.Println(entry.String())
 }
 
 func Test_Match(t *testing.T) {

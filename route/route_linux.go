@@ -80,6 +80,9 @@ func GetTable() (Table, error) {
 		}
 	}
 
+	if len(table) == 0 {
+		return nil, errors.New("can't get route table")
+	}
 	sort.Sort(tableSortImpl(table))
 	return table, nil
 }
