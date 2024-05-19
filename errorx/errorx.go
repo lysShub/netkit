@@ -8,7 +8,7 @@ import (
 
 func ShortBuff(expLen, actLen int) error {
 	return WrapTemp(errors.WithStack(
-		errors.WithMessagef(io.ErrShortBuffer, "require size %d, buff size %d", expLen, actLen),
+		errors.WithMessagef(io.ErrShortBuffer, "packet size %d, buff size %d", expLen, actLen),
 	))
 }
 

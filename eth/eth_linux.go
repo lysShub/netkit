@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/lysShub/netkit/errorx"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
 	"gvisor.dev/gvisor/pkg/tcpip"
@@ -90,13 +91,16 @@ func (c *ETHConn) ReadFromHW(ip []byte) (n int, from net.HardwareAddr, err error
 	var src unix.Sockaddr
 	var operr error
 	if err = c.raw.Read(func(fd uintptr) (done bool) {
-		n, src, operr = unix.Recvfrom(int(fd), ip, 0)
+		n, src, operr = unix.Recvfrom(int(fd), ip, unix.MSG_TRUNC)
 		return opdone(operr)
 	}); err != nil {
 		return 0, nil, err
 	}
 	if operr != nil {
 		return 0, nil, operr
+	}
+	if n > len(ip) {
+		return 0, nil, errorx.ShortBuff(n, len(ip))
 	}
 
 	if src, ok := src.(*unix.SockaddrLinklayer); ok {
