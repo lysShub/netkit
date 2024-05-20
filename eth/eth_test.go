@@ -8,14 +8,13 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"golang.org/x/sys/unix"
 	"gvisor.dev/gvisor/pkg/tcpip"
 	"gvisor.dev/gvisor/pkg/tcpip/checksum"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
 func Test_Htons(t *testing.T) {
-	a := Htons(unix.ETH_P_IP)
+	a := Htons(header.IPv4ProtocolNumber)
 	require.Equal(t, 8, a)
 }
 
