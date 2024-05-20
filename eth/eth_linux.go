@@ -90,13 +90,23 @@ func (c *ETHConn) ReadFromETH(ip []byte) (n int, from net.HardwareAddr, err erro
 	var src unix.Sockaddr
 	var operr error
 	if err = c.raw.Read(func(fd uintptr) (done bool) {
-		n, src, operr = unix.Recvfrom(int(fd), ip, unix.MSG_TRUNC)
+		// sometime, it return n is greater 6 than actual size,
+		_, src, operr = unix.Recvfrom(int(fd), ip, unix.MSG_TRUNC)
 		return opdone(operr)
 	}); err != nil {
 		return 0, nil, err
 	}
 	if operr != nil {
 		return 0, nil, operr
+	}
+
+	switch header.IPVersion(ip) {
+	case 4:
+		n = int(header.IPv4(ip).TotalLength())
+	case 6:
+		n = int(header.IPv6(ip).PayloadLength() + header.IPv6FixedHeaderSize)
+	default:
+		return 0, nil, errors.Errorf("recved invalid ip packet: %#v", ip[:min(20, len(ip))])
 	}
 	if n > len(ip) {
 		return 0, nil, errorx.ShortBuff(n, len(ip))
