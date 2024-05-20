@@ -98,7 +98,7 @@ func Test_Read(t *testing.T) {
 
 		var ip = make([]byte, 1536)
 		for ok := false; !ok; {
-			n, _, err := conn.ReadFromHW(ip)
+			n, _, err := conn.ReadFromETH(ip)
 			require.NoError(t, err)
 
 			if header.IPVersion(ip) == 4 {
@@ -108,6 +108,36 @@ func Test_Read(t *testing.T) {
 		}
 		<-retch
 	})
+}
+
+func Test_Read_Size(t *testing.T) {
+	conn, err := Listen("eth:ip4", eth0)
+	require.NoError(t, err)
+	defer conn.Close()
+
+	go func() {
+		time.Sleep(time.Second)
+		http.Get("http://baidu.com")
+	}()
+
+	{
+		var b = make([]byte, 1536)
+		n, err := conn.Read(b)
+		require.NoError(t, err)
+		eth := header.Ethernet(b[:n])
+		require.Equal(t, header.IPv4ProtocolNumber, eth.Type())
+		ip := header.IPv4(eth[header.EthernetMinimumSize:])
+		require.Equal(t, len(ip), int(ip.TotalLength()))
+	}
+
+	{
+		var ip = make(header.IPv4, 1536)
+		n, _, err := conn.ReadFromETH(ip)
+		require.NoError(t, err)
+		ip = ip[:n]
+		require.Equal(t, 4, header.IPVersion(ip))
+		require.Equal(t, len(ip), int(ip.TotalLength()))
+	}
 }
 
 func Test_Write(t *testing.T) {
@@ -168,7 +198,7 @@ func Test_Write(t *testing.T) {
 		msg := "abcd"
 
 		ip := BuildICMP(t, LocIP(), dst, header.ICMPv4Echo, []byte(msg))
-		_, err = conn.WriteToHW(ip, gateway)
+		_, err = conn.WriteToETH(ip, gateway)
 		require.NoError(t, err)
 
 		ipconn, err := net.ListenIP("ip4:icmp", &net.IPAddr{IP: LocIP().AsSlice()})
@@ -213,7 +243,7 @@ func Test_ReadWrite_Loopback(t *testing.T) {
 		require.NoError(t, err)
 		var ip = make(header.IPv4, 1536)
 		for {
-			n, _, err := conn.ReadFromHW(ip[:cap(ip)])
+			n, _, err := conn.ReadFromETH(ip[:cap(ip)])
 			require.NoError(t, err)
 			ip = ip[:n]
 
@@ -258,7 +288,7 @@ func Test_ReadWrite_Loopback(t *testing.T) {
 		require.NoError(t, err)
 		var ip = make(header.IPv4, 1536)
 		for {
-			n, _, err := conn.ReadFromHW(ip[:cap(ip)])
+			n, _, err := conn.ReadFromETH(ip[:cap(ip)])
 			require.NoError(t, err)
 			ip = ip[:n]
 

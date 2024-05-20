@@ -18,7 +18,7 @@ import (
 
 // https://man7.org/linux/man-pages/man7/packet.7.html
 type ETHConn struct {
-	proto uint16
+	proto tcpip.NetworkProtocolNumber
 	ifi   *net.Interface
 	fd    *os.File
 	raw   syscall.RawConn
@@ -27,13 +27,12 @@ type ETHConn struct {
 var _ net.Conn = (*ETHConn)(nil)
 
 func Listen(network string, ifi *net.Interface) (*ETHConn, error) {
-	var proto uint16 = unix.ETH_P_ALL
+	var proto tcpip.NetworkProtocolNumber
 	switch network {
-	case "eth:ip":
-	case "eth:ip4":
-		proto = unix.ETH_P_IP
+	case "eth:ip", "eth:ip4":
+		proto = header.IPv4ProtocolNumber
 	case "eth:ip6":
-		proto = unix.ETH_P_IPV6
+		proto = header.IPv6ProtocolNumber
 	default:
 		return nil, errors.Errorf("not support network %s", network)
 	}
@@ -44,7 +43,7 @@ func Listen(network string, ifi *net.Interface) (*ETHConn, error) {
 	}
 
 	if err = unix.Bind(fd, &unix.SockaddrLinklayer{
-		Protocol: Htons(proto),
+		Protocol: uint16(Htons(proto)),
 		Ifindex:  ifi.Index,
 		Pkttype:  unix.PACKET_HOST,
 	}); err != nil {
@@ -74,7 +73,7 @@ func Listen(network string, ifi *net.Interface) (*ETHConn, error) {
 // todo: support dial
 
 func (c *ETHConn) Read(eth []byte) (n int, err error) {
-	n, from, err := c.ReadFromHW(eth[header.EthernetMinimumSize:])
+	n, from, err := c.ReadFromETH(eth[header.EthernetMinimumSize:])
 	if err != nil {
 		return 0, err
 	}
@@ -82,12 +81,12 @@ func (c *ETHConn) Read(eth []byte) (n int, err error) {
 	header.Ethernet(eth).Encode(&header.EthernetFields{
 		SrcAddr: tcpip.LinkAddress(from),
 		DstAddr: tcpip.LinkAddress(c.ifi.HardwareAddr),
-		Type:    tcpip.NetworkProtocolNumber(Htons(c.proto)),
+		Type:    c.proto,
 	})
 	return n + header.EthernetMinimumSize, nil
 }
 
-func (c *ETHConn) ReadFromHW(ip []byte) (n int, from net.HardwareAddr, err error) {
+func (c *ETHConn) ReadFromETH(ip []byte) (n int, from net.HardwareAddr, err error) {
 	var src unix.Sockaddr
 	var operr error
 	if err = c.raw.Read(func(fd uintptr) (done bool) {
@@ -111,16 +110,16 @@ func (c *ETHConn) ReadFromHW(ip []byte) (n int, from net.HardwareAddr, err error
 
 func (c *ETHConn) Write(eth []byte) (n int, err error) {
 	to := net.HardwareAddr(header.Ethernet(eth).DestinationAddress())
-	n, err = c.WriteToHW(eth[header.EthernetMinimumSize:], to)
+	n, err = c.WriteToETH(eth[header.EthernetMinimumSize:], to)
 	if err != nil {
 		return 0, err
 	}
 	return n + header.EthernetMinimumSize, nil
 }
 
-func (c *ETHConn) WriteToHW(ip []byte, hw net.HardwareAddr) (int, error) {
+func (c *ETHConn) WriteToETH(ip []byte, hw net.HardwareAddr) (int, error) {
 	dst := &unix.SockaddrLinklayer{
-		Protocol: Htons(c.proto),
+		Protocol: uint16(Htons(c.proto)),
 		Ifindex:  c.ifi.Index,
 		Pkttype:  unix.PACKET_HOST,
 		Halen:    uint8(len(hw)),

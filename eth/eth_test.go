@@ -8,14 +8,15 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"golang.org/x/sys/unix"
 	"gvisor.dev/gvisor/pkg/tcpip"
 	"gvisor.dev/gvisor/pkg/tcpip/checksum"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
 func Test_Htons(t *testing.T) {
-	a := Htons(0x800) // unix.ETH_P_IP
-	require.Equal(t, uint16(8), a)
+	a := Htons(unix.ETH_P_IP)
+	require.Equal(t, 8, a)
 }
 
 func Baidu() netip.Addr {
