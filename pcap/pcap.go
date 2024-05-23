@@ -123,8 +123,6 @@ func (p *Pcap) WritePacket(ip *packet.Packet) error {
 	return p.write(ip.Bytes())
 }
 
-func (p *Pcap) Overhead() (int, int) { return header.EthernetMinimumSize, 0 }
-
 type BindPcap struct {
 	*Pcap
 	laddr netip.Addr
@@ -200,5 +198,3 @@ func (b *BindPcap) WritePacket(src, dst netip.Addr, proto tcpip.TransportProtoco
 
 	return b.Pcap.WritePacket(pkt)
 }
-
-func (p *BindPcap) Overhead() (int, int) { return packet.Inherit(p.Pcap, header.IPv4MinimumSize, 0) }
