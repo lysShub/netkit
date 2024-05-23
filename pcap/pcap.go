@@ -123,6 +123,8 @@ func (p *Pcap) WritePacket(ip *packet.Packet) error {
 	return p.write(ip.Bytes())
 }
 
+func (p *Pcap) Overhead() (int, int) { return header.EthernetMinimumSize, 0 }
+
 type BindPcap struct {
 	*Pcap
 	laddr netip.Addr
@@ -138,10 +140,12 @@ func Bind(p *Pcap, laddr netip.Addr) (*BindPcap, error) {
 	}, nil
 }
 
+// Outbound pcap a outbound tcp/udp/icmp packet
 func (b *BindPcap) Outbound(dst netip.Addr, proto tcpip.TransportProtocolNumber, p []byte) error {
 	return b.write(b.laddr, dst, proto, p)
 }
 
+// Inbound pcap a inbound tcp/udp/icmp packet
 func (b *BindPcap) Inbound(src netip.Addr, proto tcpip.TransportProtocolNumber, p []byte) error {
 	return b.write(src, b.laddr, proto, p)
 }
@@ -171,6 +175,7 @@ func (b *BindPcap) write(src, dst netip.Addr, proto tcpip.TransportProtocolNumbe
 	return b.Pcap.WriteIP(ip)
 }
 
+// WritePacket pcap a tcp/udp/icmp packet
 func (b *BindPcap) WritePacket(src, dst netip.Addr, proto tcpip.TransportProtocolNumber, pkt *packet.Packet) error {
 	if !src.Is4() {
 		return errors.New("only support ipv4")
@@ -195,3 +200,5 @@ func (b *BindPcap) WritePacket(src, dst netip.Addr, proto tcpip.TransportProtoco
 
 	return b.Pcap.WritePacket(pkt)
 }
+
+func (p *BindPcap) Overhead() (int, int) { return packet.Inherit(p.Pcap, header.IPv4MinimumSize, 0) }
