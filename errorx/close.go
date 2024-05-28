@@ -40,6 +40,8 @@ func (c *CloseErr) Close(fn func() (errs []error)) (err error) {
 	}
 }
 
+func (c *CloseErr) Closed() bool { return c.err.Load() != nil }
+
 type emptyErr struct{}
 
 func (emptyErr) Error() string { return "" }
