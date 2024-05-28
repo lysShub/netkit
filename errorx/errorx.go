@@ -11,9 +11,3 @@ func ShortBuff(expLen, actLen int) error {
 		errors.WithMessagef(io.ErrShortBuffer, "packet size %d, buff size %d", expLen, actLen),
 	))
 }
-
-type errClosed struct{}
-
-var ErrClosed error = errClosed{}
-
-func (errClosed) Error() string { return "closed" }

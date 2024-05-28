@@ -1,6 +1,7 @@
 package errorx
 
 import (
+	"net"
 	"runtime"
 	"sync/atomic"
 
@@ -24,7 +25,7 @@ func (c *CloseErr) Close(fn func() (errs []error)) (err error) {
 		if err != nil {
 			c.err.Store(&err)
 		} else {
-			e := errors.WithStack(ErrClosed)
+			e := errors.WithStack(net.ErrClosed)
 			c.err.Store(&e)
 		}
 		return err

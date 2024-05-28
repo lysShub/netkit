@@ -3,6 +3,7 @@ package errorx_test
 import (
 	"context"
 	"errors"
+	"net"
 	"testing"
 
 	"github.com/lysShub/netkit/errorx"
@@ -18,7 +19,7 @@ func Test_CloseErr(t *testing.T) {
 		require.NoError(t, err)
 
 		err = closeErr.Close(nil)
-		require.True(t, errors.Is(err, errorx.ErrClosed))
+		require.True(t, errors.Is(err, net.ErrClosed))
 	}
 
 	{
