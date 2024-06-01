@@ -114,9 +114,9 @@ func (p *Pcap) WritePacket(ip *packet.Packet) error {
 
 	switch ver := header.IPVersion(ip.Bytes()); ver {
 	case 4:
-		ip.Attach([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x08, 0x00})
+		ip.Attach([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x08, 0x00}...)
 	case 6:
-		ip.Attach([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x86, 0xdd})
+		ip.Attach([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x86, 0xdd}...)
 	default:
 		return errors.Errorf("not support ip version %d", ver)
 	}

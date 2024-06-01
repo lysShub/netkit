@@ -185,7 +185,7 @@ func Test_AttachN(t *testing.T) {
 func Test_Attach(t *testing.T) {
 	t.Run("Attach0", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
-		p.Attach(nil)
+		p.Attach()
 
 		require.Equal(t, 2, p.Head())
 		require.Equal(t, []byte{0, 0}, p.Bytes())
@@ -194,7 +194,7 @@ func Test_Attach(t *testing.T) {
 
 	t.Run("Attach1", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
-		p.Attach([]byte{0x11})
+		p.Attach([]byte{0x11}...)
 
 		require.Equal(t, 1, p.Head())
 		require.Equal(t, []byte{0x11, 0, 0}, p.Bytes())
@@ -204,7 +204,7 @@ func Test_Attach(t *testing.T) {
 	t.Run("Attach2", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
 		p.Bytes()[0] = 0xff
-		p.Attach([]byte{1, 2, 3})
+		p.Attach([]byte{1, 2, 3}...)
 
 		require.Equal(t, packet.DefaulfHead, p.Head())
 		require.Equal(t, []byte{1, 2, 3, 0xff, 0}, p.Bytes())
@@ -213,7 +213,7 @@ func Test_Attach(t *testing.T) {
 
 	t.Run("Attach3", func(t *testing.T) {
 		msg := "hello world"
-		p := packet.Make().Append([]byte(msg))
+		p := packet.Make().Append([]byte(msg)...)
 		require.Equal(t, msg, string(p.Bytes()))
 	})
 }
@@ -344,7 +344,7 @@ func Test_AppendN(t *testing.T) {
 func Test_Append(t *testing.T) {
 	t.Run("Append0", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
-		p.Append(nil)
+		p.Append()
 
 		require.Equal(t, 2, p.Head())
 		require.Equal(t, []byte{0, 0}, p.Bytes())
@@ -353,7 +353,7 @@ func Test_Append(t *testing.T) {
 
 	t.Run("Append1", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
-		p.Append([]byte{0x11})
+		p.Append([]byte{0x11}...)
 
 		require.Equal(t, 2, p.Head())
 		require.Equal(t, []byte{0, 0, 0x11}, p.Bytes())
@@ -363,7 +363,7 @@ func Test_Append(t *testing.T) {
 	t.Run("Append2", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
 		p.Bytes()[0] = 0xff
-		p.Append([]byte{1, 2, 3})
+		p.Append([]byte{1, 2, 3}...)
 
 		require.Equal(t, 2, p.Head())
 		require.Equal(t, []byte{0xff, 0, 1, 2, 3}, p.Bytes())
@@ -372,7 +372,7 @@ func Test_Append(t *testing.T) {
 
 	t.Run("Append3", func(t *testing.T) {
 		msg := "hello world"
-		p := packet.Make().Append([]byte(msg))
+		p := packet.Make().Append([]byte(msg)...)
 		require.Equal(t, msg, string(p.Bytes()))
 	})
 }
@@ -457,8 +457,8 @@ func Test_Reduce(t *testing.T) {
 func Test_Clone(t *testing.T) {
 	p := packet.Make(2, 2, 2)
 	p.Bytes()[0], p.Bytes()[1] = 3, 4
-	p.Attach([]byte{1, 2})
-	p.Append([]byte{5, 6})
+	p.Attach([]byte{1, 2}...)
+	p.Append([]byte{5, 6}...)
 	p.Sets(2, 2)
 
 	p1 := p.Clone()

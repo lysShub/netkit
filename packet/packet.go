@@ -86,7 +86,7 @@ func (p *Packet) Sets(head, data int) *Packet {
 
 // Attach attach b ahead data-section, use head-section firstly, if head section too short,
 // will re-alloc memory.
-func (p *Packet) Attach(b []byte) *Packet {
+func (p *Packet) Attach(b ...byte) *Packet {
 	copy(p.AttachN(len(b)).Bytes(), b)
 	return p
 }
@@ -121,7 +121,7 @@ func (p *Packet) DetachN(n int) *Packet {
 	return p
 }
 
-func (p *Packet) Append(b []byte) *Packet {
+func (p *Packet) Append(b ...byte) *Packet {
 	d := p.AppendN(len(b)).Bytes()
 	copy(d[len(d)-len(b):], b)
 	return p
