@@ -30,10 +30,11 @@ func Listen(network string, ifi *net.Interface) (*ETHConn, error) {
 	var proto tcpip.NetworkProtocolNumber
 	switch network {
 	case "eth:ip", "eth:ip4":
-		proto = header.IPv4ProtocolNumber
+		proto = header.IPv4ProtocolNumber // unix.ETH_P_IP
 	case "eth:ip6":
-		proto = header.IPv6ProtocolNumber
+		proto = header.IPv6ProtocolNumber // unix.ETH_P_IPV6
 	default:
+		// todo: support unix.ETH_P_ALL
 		return nil, errors.Errorf("not support network %s", network)
 	}
 
@@ -150,14 +151,14 @@ func (c *ETHConn) WriteToETH(ip []byte, hw net.HardwareAddr) (int, error) {
 	return len(ip), nil
 }
 
-func (c *ETHConn) Close() error                       { return c.fd.Close() }
-func (c *ETHConn) LocalAddr() net.Addr                { return ETHAddr(c.ifi.HardwareAddr) }
-func (c *ETHConn) RemoteAddr() net.Addr               { return nil }
-func (c *ETHConn) SyscallConn() syscall.RawConn       { return c.raw }
-func (c *ETHConn) SetDeadline(t time.Time) error      { return c.fd.SetDeadline(t) }
-func (c *ETHConn) SetReadDeadline(t time.Time) error  { return c.fd.SetReadDeadline(t) }
-func (c *ETHConn) SetWriteDeadline(t time.Time) error { return c.fd.SetWriteDeadline(t) }
-func (c *ETHConn) Interface() *net.Interface          { return c.ifi }
+func (c *ETHConn) Close() error                          { return c.fd.Close() }
+func (c *ETHConn) LocalAddr() net.Addr                   { return ETHAddr(c.ifi.HardwareAddr) }
+func (c *ETHConn) RemoteAddr() net.Addr                  { return nil }
+func (c *ETHConn) SyscallConn() (syscall.RawConn, error) { return c.raw, nil }
+func (c *ETHConn) SetDeadline(t time.Time) error         { return c.fd.SetDeadline(t) }
+func (c *ETHConn) SetReadDeadline(t time.Time) error     { return c.fd.SetReadDeadline(t) }
+func (c *ETHConn) SetWriteDeadline(t time.Time) error    { return c.fd.SetWriteDeadline(t) }
+func (c *ETHConn) Interface() *net.Interface             { return c.ifi }
 
 type ETHAddr net.HardwareAddr
 
