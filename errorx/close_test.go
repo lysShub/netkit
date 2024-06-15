@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/lysShub/netkit/errorx"
 	"github.com/stretchr/testify/require"
@@ -35,6 +36,20 @@ func Test_CloseErr(t *testing.T) {
 		require.Contains(t, err.Error(), "1234")
 	}
 
+	{
+		var closeErr errorx.CloseErr
+
+		err := closeErr.Close(func() (errs []error) {
+			errs = append(errs, errors.New("1234"))
+			errs = append(errs, errors.New("5678"))
+			return
+		})
+		require.Contains(t, err.Error(), "1234")
+
+		err = closeErr.Close(nil)
+		require.Contains(t, err.Error(), "1234")
+	}
+
 	t.Run("parallel", func(t *testing.T) {
 		var eg, _ = errgroup.WithContext(context.Background())
 
@@ -43,6 +58,7 @@ func Test_CloseErr(t *testing.T) {
 			if i%2 == 0 {
 				eg.Go(func() error {
 					err := closeErr.Close(func() (errs []error) {
+						time.Sleep(time.Second)
 						errs = append(errs, errors.New("1234"))
 						return
 					})

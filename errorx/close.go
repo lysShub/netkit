@@ -16,8 +16,9 @@ func (c *CloseErr) Close(fn func() (errs []error)) (err error) {
 	if c.err.CompareAndSwap(nil, &_emptyErr) {
 		if fn != nil {
 			for _, e := range fn() {
-				if err == nil {
+				if e != nil && err == nil {
 					err = e
+					break
 				}
 			}
 		}

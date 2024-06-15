@@ -15,7 +15,7 @@ import (
 
 func Test_Htons(t *testing.T) {
 	a := Htons(header.IPv4ProtocolNumber)
-	require.Equal(t, 8, a)
+	require.Equal(t, 8, int(a))
 }
 
 func Baidu() netip.Addr {
