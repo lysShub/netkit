@@ -264,10 +264,10 @@ func Test_DetachN(t *testing.T) {
 	})
 }
 
-func Test_Detach(t *testing.T) {
+func Test_DetachTo(t *testing.T) {
 	t.Run("Detach0", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
-		p.Detach(nil)
+		p.DetachTo(nil)
 
 		require.Equal(t, 2, p.Head())
 		require.Equal(t, []byte{0, 0}, p.Bytes())
@@ -276,7 +276,7 @@ func Test_Detach(t *testing.T) {
 
 	t.Run("Detach1", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
-		p.Detach(make([]byte, 1))
+		p.DetachTo(make([]byte, 1))
 
 		require.Equal(t, 3, p.Head())
 		require.Equal(t, 1, p.Data())
@@ -286,7 +286,7 @@ func Test_Detach(t *testing.T) {
 	t.Run("Detach2", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
 		p.Bytes()[0] = 0xff
-		d := p.Detach(make([]byte, 3))
+		d := p.DetachTo(make([]byte, 3))
 
 		require.Equal(t, 4, p.Head())
 		require.Equal(t, 0, p.Data())
@@ -423,10 +423,10 @@ func Test_ReduceN(t *testing.T) {
 	})
 }
 
-func Test_Reduce(t *testing.T) {
+func Test_ReduceTo(t *testing.T) {
 	t.Run("Reduce0", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
-		p.Reduce(nil)
+		p.ReduceTo(nil)
 
 		require.Equal(t, 2, p.Head())
 		require.Equal(t, []byte{0, 0}, p.Bytes())
@@ -435,7 +435,7 @@ func Test_Reduce(t *testing.T) {
 
 	t.Run("Reduce1", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
-		p.Reduce(make([]byte, 1))
+		p.ReduceTo(make([]byte, 1))
 
 		require.Equal(t, 2, p.Head())
 		require.Equal(t, 1, p.Data())
@@ -445,7 +445,7 @@ func Test_Reduce(t *testing.T) {
 	t.Run("Reduce2", func(t *testing.T) {
 		p := packet.Make(2, 2, 2)
 		p.Bytes()[0] = 0xff
-		d := p.Reduce(make([]byte, 3))
+		d := p.ReduceTo(make([]byte, 3))
 
 		require.Equal(t, 2, p.Head())
 		require.Equal(t, 0, p.Data())

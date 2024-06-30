@@ -110,10 +110,15 @@ func (p *Packet) AttachN(n int) *Packet {
 	return p
 }
 
-func (p *Packet) Detach(b []byte) []byte {
-	n := copy(b, p.Bytes())
+func (p *Packet) Detach(n int) []byte {
+	b := p.Bytes()
 	p.DetachN(n)
-	return b[:n]
+	return b[:min(n, len(b))]
+}
+
+func (p *Packet) DetachTo(to []byte) []byte {
+	n := copy(to, p.Detach(len(to)))
+	return to[:n]
 }
 
 func (p *Packet) DetachN(n int) *Packet {
@@ -147,11 +152,14 @@ func (p *Packet) AppendN(n int) *Packet {
 	return p
 }
 
-func (p *Packet) Reduce(b []byte) []byte {
-	n := p.Data()
-	d := p.ReduceN(len(b)).Bytes()
-	n = copy(b, d[len(d):n])
-	return b[:n]
+func (p *Packet) Reduce(n int) []byte {
+	b := p.Bytes()
+	return b[p.ReduceN(n).Data():]
+}
+
+func (p *Packet) ReduceTo(to []byte) []byte {
+	n := copy(to, p.Reduce(len(to)))
+	return to[:n]
 }
 
 func (p *Packet) ReduceN(n int) *Packet {
