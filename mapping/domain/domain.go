@@ -1,5 +1,5 @@
 /*
-	rDNS
+	domain <==> address
 */
 
 package domain

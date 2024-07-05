@@ -79,7 +79,7 @@ func getIpAddrs() ([]netcall.MibIpAddrRow, error) {
 	var b = make([]byte, size)
 	err := netcall.GetIpAddrTable(b, &size, false)
 	if err == nil {
-		return netcall.MibIpAddrTable(b).MibIpAddrRows(), nil
+		return netcall.MibIpAddrTable(b).Rows(), nil
 	} else if !errors.Is(err, windows.ERROR_INSUFFICIENT_BUFFER) {
 		return nil, err
 	}
@@ -89,5 +89,5 @@ func getIpAddrs() ([]netcall.MibIpAddrRow, error) {
 	if err != nil {
 		return nil, err
 	}
-	return netcall.MibIpAddrTable(b).MibIpAddrRows(), nil
+	return netcall.MibIpAddrTable(b).Rows(), nil
 }

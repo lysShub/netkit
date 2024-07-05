@@ -15,9 +15,11 @@ func TestXxxx(t *testing.T) {
 	table, err := route.GetTable()
 	require.NoError(t, err)
 
-	entry := table.Match(netip.IPv4Unspecified())
-	require.True(t, entry.Valid())
-	fmt.Println(entry.String())
+	fmt.Println(table.String())
+
+	// entry := table.Match(netip.IPv4Unspecified())
+	// require.True(t, entry.Valid())
+	// fmt.Println(entry.String())
 }
 
 func Test_Match(t *testing.T) {

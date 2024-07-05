@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/lysShub/netkit/errorx"
+	netcall "github.com/lysShub/netkit/syscall"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"
 	"gvisor.dev/gvisor/pkg/tcpip"
@@ -38,13 +39,13 @@ func Listen(network string, ifi *net.Interface) (*ETHConn, error) {
 		return nil, errors.Errorf("not support network %s", network)
 	}
 
-	fd, err := unix.Socket(unix.AF_PACKET, unix.SOCK_DGRAM, int(Htons(proto)))
+	fd, err := unix.Socket(unix.AF_PACKET, unix.SOCK_DGRAM, int(netcall.Hton(uint16(proto))))
 	if err != nil {
 		return nil, err
 	}
 
 	if err = unix.Bind(fd, &unix.SockaddrLinklayer{
-		Protocol: uint16(Htons(proto)),
+		Protocol: netcall.Hton(uint16(proto)),
 		Ifindex:  ifi.Index,
 		Pkttype:  unix.PACKET_HOST,
 	}); err != nil {
@@ -130,7 +131,7 @@ func (c *ETHConn) Write(eth []byte) (n int, err error) {
 
 func (c *ETHConn) WriteToETH(ip []byte, hw net.HardwareAddr) (int, error) {
 	dst := &unix.SockaddrLinklayer{
-		Protocol: uint16(Htons(c.proto)),
+		Protocol: netcall.Hton(uint16(c.proto)),
 		Ifindex:  c.ifi.Index,
 		Pkttype:  unix.PACKET_HOST,
 		Halen:    uint8(len(hw)),

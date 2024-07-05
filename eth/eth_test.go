@@ -4,7 +4,6 @@ import (
 	"math/rand"
 	"net"
 	"net/netip"
-	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
@@ -12,11 +11,6 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/checksum"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
-
-func Test_Htons(t *testing.T) {
-	a := Htons(header.IPv4ProtocolNumber)
-	require.Equal(t, 8, int(a))
-}
 
 func Baidu() netip.Addr {
 	ips, err := net.LookupIP("baidu.com")
