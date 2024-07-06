@@ -9,7 +9,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.17.1
 	golang.org/x/sync v0.1.0
-	golang.org/x/sys v0.19.0
+	golang.org/x/sys v0.20.0
 	golang.zx2c4.com/wireguard/windows v0.5.3
 	gvisor.dev/gvisor v0.0.0-20230916030846-1d82564559db
 )

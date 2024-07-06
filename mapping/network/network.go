@@ -39,8 +39,11 @@ func Process(laddr netip.AddrPort, proto uint8) (e Elem, err error) {
 	if !laddr.Addr().Is4() {
 		return Elem{}, errors.Errorf("only support ipv4 %s", laddr.Addr().String())
 	}
+	n, err := New()
+	if err != nil {
+		return Elem{}, err
+	}
 
-	var n = New()
 	if err = n.visit(proto, func(es []Elem) {
 		i := slices.IndexFunc(es, func(e Elem) bool { return equal(e.Laddr, laddr) })
 		if i > 0 {
@@ -79,8 +82,11 @@ func Network(process string) (es []Elem, err error) {
 	if process == "" {
 		return es, err
 	}
+	n, err := New()
+	if err != nil {
+		return nil, err
+	}
 
-	var n = New()
 	if err := n.Upgrade(0); err != nil {
 		return nil, err
 	}
@@ -117,7 +123,11 @@ func String(proto uint8) (string, error) {
 
 	var s = &strings.Builder{}
 
-	var n = New()
+	n, err := New()
+	if err != nil {
+		return "", err
+	}
+
 	if err := n.Upgrade(proto); err != nil {
 		return "", err
 	}

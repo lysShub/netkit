@@ -6,6 +6,7 @@ import (
 
 	netcall "github.com/lysShub/netkit/syscall"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/sys/windows"
 )
 
 func Benchmark_GetExtendedTcpTable_Norder(b *testing.B) {
@@ -61,4 +62,29 @@ func Test_GetExtendedUdpTable(t *testing.T) {
 	for _, e := range rows {
 		fmt.Println(e.LocalAddr().String())
 	}
+}
+
+func Test_QueryDosDeviceW(t *testing.T) {
+
+	var b = make([]uint16, 0xffff)
+
+	err := netcall.QueryDosDeviceW("A:", b)
+	require.NoError(t, err)
+
+	// windows.ERROR_FLT_FILTER_NOT_FOUND
+
+	str := windows.UTF16ToString(b)
+	fmt.Println(str)
+
+	// var ss []byte
+	// for _, e := range b {
+	// 	if e > 0xff {
+	// 		panic("")
+	// 	}
+	// 	ss = append(ss, byte(e))
+	// }
+
+	// str := string(ss)
+	// fmt.Println(str)
+
 }

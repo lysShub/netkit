@@ -23,13 +23,21 @@ type network struct {
 	*upgrader
 }
 
-func New() *network {
+func New() (n *network, err error) {
 	once.Do(func() {
-		global = &network{
-			upgrader: newUpgrader(),
-		}
+		global, err = newNetwork()
 	})
-	return global
+	if err != nil {
+		return nil, err
+	}
+	return global, nil
+}
+
+func newNetwork() (*network, error) {
+	var n = &network{
+		upgrader: newUpgrader(),
+	}
+	return n, nil
 }
 
 func (n *network) Upgrade(proto uint8) error {
@@ -90,13 +98,17 @@ type upgrader struct {
 	mu           sync.Mutex
 	tcptable     netcall.MibTcpTableOwnerPid
 	udptable     netcall.MibUdpTableOwnerPid
-	procpathBuff [syscall.MAX_LONG_PATH]uint16
+	procpathBuff []uint16
 	pidpathCache map[uint32]string
+
+	dosCache map[string]byte // uint16-dos-name : device
 }
 
 func newUpgrader() *upgrader {
 	return &upgrader{
+		procpathBuff: make([]uint16, syscall.MAX_LONG_PATH),
 		pidpathCache: map[uint32]string{},
+		dosCache:     map[string]byte{},
 	}
 }
 
@@ -194,20 +206,74 @@ func (n *upgrader) modelPath(pid uint32) (path string, err error) {
 	case 4:
 		path = SystemName
 	default:
+		// reference github.com/shirou/gopsutil/v3/process.Name
+
 		proc, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, pid)
 		if err != nil {
-			//  windows.ERROR_ACCESS_DENIED
+			// windows.ERROR_ACCESS_DENIED
 			return "", errors.WithStack(errors.WithMessage(err, strconv.Itoa(int(pid))))
 		}
 		defer windows.Close(proc)
 
-		err = windows.GetModuleFileNameEx(proc, 0, &n.procpathBuff[0], uint32(len(n.procpathBuff)))
-		if err != nil {
-			return "", errors.WithStack(err)
+		size := uint32(len(n.procpathBuff))
+		if err = netcall.QueryFullProcessImageNameW(
+			proc, 0, n.procpathBuff, &size,
+		); err == nil {
+			path = windows.UTF16ToString(n.procpathBuff)
+			n.pidpathCache[pid] = path
+			return path, nil
 		}
-		path = windows.UTF16ToString(n.procpathBuff[:])
+
+		if _, err := netcall.GetProcessImageFileNameW(proc, n.procpathBuff); err != nil {
+			return "", err
+		} else {
+			path, err = n.devicePath(n.procpathBuff)
+			if err != nil {
+				return "", err
+			}
+
+			n.pidpathCache[pid] = path
+			return path, nil
+		}
 	}
 
-	n.pidpathCache[pid] = path
 	return path, nil
+}
+
+func (u *upgrader) devicePath(dos []uint16) (string, error) {
+	if len(u.dosCache) == 0 {
+		var b = make([]uint16, 512)
+		for d := 'A'; d < 'Z'; d++ {
+			err := netcall.QueryDosDeviceW(string([]rune{d, ':'}), b)
+			if err != nil {
+				if errors.Is(err, windows.ERROR_FILE_NOT_FOUND) {
+					continue
+				}
+				return "", err
+			}
+			u.dosCache[windows.UTF16ToString(b)] = byte(d)
+		}
+	}
+
+	const slash = '\\'
+
+	var n, i int
+	for ; i < len(dos); i++ {
+		if dos[i] == slash {
+			n += 1
+			if n == 3 {
+				break
+			}
+		}
+	}
+
+	var dosprefix = windows.UTF16ToString(dos[:i]) // \Device\HarddiskVolume1\
+	d, has := u.dosCache[dosprefix]
+	if !has {
+		return "", errors.Errorf("not found dos device：%s", dosprefix)
+	}
+
+	dos[i-1] = ':'
+	dos[i-2] = uint16(d)
+	return windows.UTF16ToString(dos[i-2:]), nil
 }

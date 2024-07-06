@@ -26,6 +26,10 @@ var (
 
 	kernel32                       = windows.NewLazySystemDLL("kernel32.dll")
 	procQueryFullProcessImageNameW = kernel32.NewProc("QueryFullProcessImageNameW")
+	procQueryDosDeviceW            = kernel32.NewProc("QueryDosDeviceW")
+
+	psapi                        = windows.NewLazySystemDLL("psapi.dll")
+	procGetProcessImageFileNameW = psapi.NewProc("GetProcessImageFileNameW")
 )
 
 // GetIpForwardTable get sorted ip route entries
@@ -376,3 +380,53 @@ func (r *Recvall) Recv(ip []byte) (int, error) {
 }
 
 func (r *Recvall) Close() error { return errors.WithStack(windows.Close(r.fd)) }
+
+func QueryFullProcessImageNameW(proc windows.Handle, flags uint32, name []uint16, size *uint32) error {
+	r1, _, e := syscall.SyscallN(
+		procQueryFullProcessImageNameW.Addr(),
+		uintptr(proc),
+		uintptr(flags),
+		uintptr(unsafe.Pointer(unsafe.SliceData(name))),
+		uintptr(unsafe.Pointer(size)),
+	)
+	if r1 == 0 {
+		return errors.WithStack(e)
+	}
+	return nil
+}
+
+func GetProcessImageFileNameW(proc windows.Handle, name []uint16) (uint32, error) {
+	r1, _, e := syscall.SyscallN(
+		procGetProcessImageFileNameW.Addr(),
+		uintptr(proc),
+		uintptr(unsafe.Pointer(unsafe.SliceData(name))),
+		uintptr(len(name)),
+	)
+	if r1 == 0 {
+		return 0, errors.WithStack(e)
+	}
+	return uint32(r1), nil
+}
+
+func QueryDosDeviceW(deviceName string, TargetPath []uint16) error {
+
+	var namePrt uintptr
+	if len(deviceName) > 0 {
+		n, err := windows.UTF16PtrFromString(deviceName)
+		if err != nil {
+			return errors.WithStack(err)
+		}
+		namePrt = uintptr(unsafe.Pointer(n))
+	}
+
+	r1, _, e := syscall.SyscallN(
+		procQueryDosDeviceW.Addr(),
+		namePrt,
+		uintptr(unsafe.Pointer(unsafe.SliceData(TargetPath))),
+		uintptr(len(TargetPath)),
+	)
+	if r1 == 0 {
+		return errors.WithStack(e)
+	}
+	return nil
+}
