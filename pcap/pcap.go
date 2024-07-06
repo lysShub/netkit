@@ -143,5 +143,5 @@ func (p *Pcap) WritePayload(src, dst netip.Addr, proto tcpip.TransportProtocolNu
 	} else {
 		return errors.Errorf("src %s dst %s", src.String(), dst.String())
 	}
-	return nil
+	return p.WritePacket(payload)
 }
