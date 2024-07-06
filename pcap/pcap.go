@@ -123,78 +123,25 @@ func (p *Pcap) WritePacket(ip *packet.Packet) error {
 	return p.write(ip.Bytes())
 }
 
-type BindPcap struct {
-	*Pcap
-	laddr netip.Addr
-}
-
-func Bind(p *Pcap, laddr netip.Addr) (*BindPcap, error) {
-	if !laddr.Is4() {
-		return nil, errors.New("only support ipv4")
+func (p *Pcap) WritePayload(src, dst netip.Addr, proto tcpip.TransportProtocolNumber, payload *packet.Packet) error {
+	if src.Is4() && dst.Is4() {
+		ip := header.IPv4(payload.AttachN(header.IPv4MinimumSize).Bytes())
+		ip.Encode(&header.IPv4Fields{
+			TotalLength: uint16(len(ip)),
+			Protocol:    uint8(proto),
+			SrcAddr:     tcpip.AddrFrom4(src.As4()),
+			DstAddr:     tcpip.AddrFrom4(dst.As4()),
+		})
+	} else if src.Is6() && dst.Is6() {
+		ip := header.IPv6(payload.AttachN(header.IPv6MinimumSize).Bytes())
+		ip.Encode(&header.IPv6Fields{
+			TrafficClass:  uint8(proto),
+			PayloadLength: uint16(len(ip)) - header.IPv6MinimumSize,
+			SrcAddr:       tcpip.AddrFrom16(src.As16()),
+			DstAddr:       tcpip.AddrFrom16(dst.As16()),
+		})
+	} else {
+		return errors.Errorf("src %s dst %s", src.String(), dst.String())
 	}
-	return &BindPcap{
-		Pcap:  p,
-		laddr: laddr,
-	}, nil
-}
-
-// Outbound pcap a outbound tcp/udp/icmp packet
-func (b *BindPcap) Outbound(dst netip.Addr, proto tcpip.TransportProtocolNumber, p []byte) error {
-	return b.write(b.laddr, dst, proto, p)
-}
-
-// Inbound pcap a inbound tcp/udp/icmp packet
-func (b *BindPcap) Inbound(src netip.Addr, proto tcpip.TransportProtocolNumber, p []byte) error {
-	return b.write(src, b.laddr, proto, p)
-}
-
-func (b *BindPcap) write(src, dst netip.Addr, proto tcpip.TransportProtocolNumber, p []byte) error {
-	if !src.Is4() {
-		return errors.New("only support ipv4")
-	}
-	ip := make(header.IPv4, len(p)+header.IPv4MinimumSize)
-	copy(ip[header.IPv4MinimumSize:], p)
-
-	ip.Encode(&header.IPv4Fields{
-		TOS:            0,
-		TotalLength:    uint16(len(ip)),
-		ID:             0,
-		Flags:          0,
-		FragmentOffset: 0,
-		TTL:            64,
-		Protocol:       uint8(proto),
-		Checksum:       0,
-		SrcAddr:        tcpip.AddrFrom4(src.As4()),
-		DstAddr:        tcpip.AddrFrom4(dst.As4()),
-		Options:        nil,
-	})
-	ip.SetChecksum(^ip.CalculateChecksum())
-
-	return b.Pcap.WriteIP(ip)
-}
-
-// WritePacket pcap a tcp/udp/icmp packet
-func (b *BindPcap) WritePacket(src, dst netip.Addr, proto tcpip.TransportProtocolNumber, pkt *packet.Packet) error {
-	if !src.Is4() {
-		return errors.New("only support ipv4")
-	}
-
-	defer pkt.DetachN(header.IPv4MinimumSize)
-	ip := header.IPv4(pkt.AttachN(header.IPv4MinimumSize).Bytes())
-	ip.Encode(&header.IPv4Fields{
-		TOS:            0,
-		TotalLength:    uint16(len(ip)),
-		ID:             0,
-		Flags:          0,
-		FragmentOffset: 0,
-		TTL:            64,
-		Protocol:       uint8(proto),
-		Checksum:       0,
-		SrcAddr:        tcpip.AddrFrom4(src.As4()),
-		DstAddr:        tcpip.AddrFrom4(dst.As4()),
-		Options:        nil,
-	})
-	ip.SetChecksum(^ip.CalculateChecksum())
-
-	return b.Pcap.WritePacket(pkt)
+	return nil
 }
