@@ -2,8 +2,6 @@ package errorx_test
 
 import (
 	"bytes"
-	"context"
-	stderr "errors"
 	"log/slog"
 	"testing"
 
@@ -14,113 +12,70 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+func e0() error {
+	err := errors.New("xxx")
+	return err
+}
+
+func e1() error {
+	err := e0()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func t0() string {
+	buff := bytes.NewBuffer(nil)
+	l := slog.New(slog.NewJSONHandler(buff, nil))
+
+	err := e1()
+	l.Error(err.Error(), errorx.Trace(err))
+	return buff.String()
+}
+
 func Test_Trace(t *testing.T) {
-	{
-		b := bytes.NewBuffer(nil)
-		l := slog.New(slog.NewJSONHandler(b, nil))
 
-		err := c()
-		l.LogAttrs(context.TODO(), slog.LevelError, err.Error(), errorx.Trace(err))
-		out := b.String()
+	t.Run("normal", func(t *testing.T) {
+		out := t0()
 
 		res1 := gjson.Get(out, "trace.0")
 		require.Equal(t, gjson.String, res1.Type)
-		require.Contains(t, res1.Str, "trace_test.go")
+		require.Contains(t, res1.Str, "trace_test.go:17", out)
 
 		res2 := gjson.Get(out, "trace.1")
 		require.Equal(t, gjson.String, res2.Type)
-		require.Contains(t, res2.Str, "trace_test.go")
+		require.Contains(t, res2.Str, "trace_test.go:22", out)
 
 		res3 := gjson.Get(out, "trace.2")
 		require.Equal(t, gjson.String, res3.Type)
-		require.Contains(t, res3.Str, "trace_test.go")
-	}
+		require.Contains(t, res3.Str, "trace_test.go:34", out)
 
-	{
+		res4 := gjson.Get(out, "trace.3")
+		require.Equal(t, gjson.String, res4.Type)
+		require.Contains(t, res4.Str, "trace_test.go:35", out)
+
+		res5 := gjson.Get(out, "trace.4")
+		require.Equal(t, gjson.String, res5.Type)
+		require.Contains(t, res5.Str, "trace_test.go:42", out)
+
+		res6 := gjson.Get(out, "trace.5")
+		require.Equal(t, gjson.Null, res6.Type)
+	})
+
+	t.Run("nil", func(t *testing.T) {
 		b := bytes.NewBuffer(nil)
 		l := slog.New(slog.NewJSONHandler(b, nil))
 
-		err := c()
-		l.Error(err.Error(), errorx.Trace(err))
+		l.Error(" ", errorx.Trace(nil))
 		out := b.String()
 
 		res1 := gjson.Get(out, "trace.0")
 		require.Equal(t, gjson.String, res1.Type)
-		require.Contains(t, res1.Str, "trace_test.go")
-
-		res2 := gjson.Get(out, "trace.1")
-		require.Equal(t, gjson.String, res2.Type)
-		require.Contains(t, res2.Str, "trace_test.go")
-
-		res3 := gjson.Get(out, "trace.2")
-		require.Equal(t, gjson.String, res3.Type)
-		require.Contains(t, res3.Str, "trace_test.go")
-	}
-
-	{
-		b := bytes.NewBuffer(nil)
-		l := slog.New(slog.NewJSONHandler(b, nil))
-
-		err := stderr.New("xxx")
-		l.Error(err.Error(), errorx.Trace(err))
-		out := b.String()
-
-		res1 := gjson.Get(out, "trace.0")
-		require.Equal(t, gjson.String, res1.Type)
-		require.Contains(t, res1.Str, "trace_test.go")
+		require.Contains(t, res1.Str, "trace_test.go:71", out)
 
 		res2 := gjson.Get(out, "trace.1")
 		require.Equal(t, gjson.Null, res2.Type)
-	}
-
-	{
-		b := bytes.NewBuffer(nil)
-		l := slog.New(slog.NewJSONHandler(b, nil))
-
-		var err error = nil
-		l.Error("nil", errorx.Trace(err))
-		out := b.String()
-
-		res1 := gjson.Get(out, "trace.0")
-		require.Equal(t, gjson.String, res1.Type)
-		require.Contains(t, res1.Str, "trace_test.go")
-
-		res2 := gjson.Get(out, "trace.1")
-		require.Equal(t, gjson.Null, res2.Type)
-	}
-}
-
-func Test_CallTrace(t *testing.T) {
-	b := bytes.NewBuffer(nil)
-	l := slog.New(slog.NewJSONHandler(b, nil))
-
-	l.Error("xxx", errorx.CallTrace())
-	out := b.String()
-
-	require.Contains(t, out, "testing.go")
-}
-
-func c() error {
-	e := b()
-	if e != nil {
-		err := errors.WithStack(errors.New("c-fail"))
-
-		return err
-	}
-
-	return nil
-}
-
-func b() error {
-	e := a()
-	if e != nil {
-		return errors.WithStack(e)
-	}
-
-	return nil
-}
-
-func a() error {
-	e := errors.New("xxx")
-	return errors.WithStack(e)
+	})
 }

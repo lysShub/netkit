@@ -1,86 +1,63 @@
 package errorx
 
 import (
+	"fmt"
 	"log/slog"
 	"runtime"
+	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/pkg/errors"
 )
 
-// Trace get github.com/pkg/errors stack trace as slog.Attr
+// Trace trans github.com/pkg/errors stack trace as slog.Attr
 //
 // Example:
 //
-//	slog.Error(err.Error(), xerr.Trace(err))
+//	slog.Error(err.Error(), errorx.Trace(err))
 func Trace(err error) slog.Attr {
-	type trace interface{ StackTrace() errors.StackTrace }
+	var pcs []uintptr
 
-	// only hit innermost trace
+	// get err with stack trace, only hit innermost
+	type trace interface{ StackTrace() errors.StackTrace }
 	var t trace
 	for e := err; e != nil; {
 		if e1, ok := e.(trace); ok {
 			t = e1
 		}
-
 		e = errors.Unwrap(e)
 	}
-
-	var attrs []slog.Attr
 	if t != nil {
-		st := t.StackTrace()
-
-		attrs = make([]slog.Attr, 0, len(st)-1)
-		for i := 0; i < len(st)-2; i++ {
-			attrs = append(attrs, slog.Attr{
-				Key:   strconv.Itoa(i),
-				Value: position(st[i]),
-			})
+		for _, e := range t.StackTrace() {
+			pcs = append(pcs, uintptr(e))
 		}
 	}
 
-	// add call self position
-	var pcs = make([]uintptr, 1)
-	n := runtime.Callers(2, pcs)
-	if n == 1 {
-		attrs = append(attrs, slog.Attr{
-			Key:   strconv.Itoa(len(attrs)),
-			Value: position(errors.Frame(pcs[0])),
-		})
+	// get call Trace stack trace
+	var pc2 = make([]uintptr, 16)
+	pc2 = pc2[:runtime.Callers(2, pc2)]
+	if len(pc2) > 1 {
+		i := slices.Index(pcs, pc2[1])
+		if i >= 0 {
+			pcs = append(pcs[:i], pc2...)
+		} else {
+			pcs = append(pcs, pc2...)
+		}
 	}
 
-	return slog.Attr{Key: "trace", Value: slog.GroupValue(attrs...)}
-}
-
-func CallTrace() slog.Attr {
 	var attrs []slog.Attr
+	fs := runtime.CallersFrames(pcs[:len(pcs)-2])
+	for {
+		f, more := fs.Next()
 
-	var pcs = make([]uintptr, 32)
-	pcs = pcs[:runtime.Callers(2, pcs)]
-	for _, e := range pcs {
 		attrs = append(attrs, slog.Attr{
 			Key:   strconv.Itoa(len(attrs)),
-			Value: position(errors.Frame(e)),
+			Value: slog.StringValue(fmt.Sprintf("%s:%d", f.File, f.Line)),
 		})
+		if !more {
+			break
+		}
 	}
+
 	return slog.Attr{Key: "trace", Value: slog.GroupValue(attrs...)}
-}
-
-func position(f errors.Frame) slog.Value {
-	pc := uintptr(f) - 1
-	fn := runtime.FuncForPC(pc)
-	if fn == nil {
-		return slog.StringValue("")
-	}
-	file, line := fn.FileLine(pc)
-	// file = relpath(file)
-	strn := strconv.Itoa(line)
-
-	b := strings.Builder{}
-	b.Grow(len(file) + 1 + len(strn))
-	b.WriteString(file)
-	b.WriteRune(':')
-	b.WriteString(strn)
-	return slog.StringValue(b.String())
 }

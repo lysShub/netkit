@@ -71,7 +71,7 @@ func (p *Packet) SetHead(head int) *Packet {
 
 func (p *Packet) SetData(data int) *Packet {
 	if debug.Debug() && data == math.MaxInt {
-		slog.Warn("overflow warning", errorx.CallTrace())
+		slog.Warn("overflow warning", errorx.Trace(nil))
 	}
 
 	p.b = p.b[:min(p.Head()+max(data, 0), cap(p.b))]
@@ -97,7 +97,7 @@ func (p *Packet) AttachN(n int) *Packet {
 		p.i = head
 	} else {
 		if debug.Debug() {
-			slog.Warn("packet memory alloc", errorx.CallTrace())
+			slog.Warn("packet memory alloc", errorx.Trace(nil))
 		}
 
 		size := len(p.b) - head + DefaulfHead
@@ -134,7 +134,7 @@ func (p *Packet) Append(b ...byte) *Packet {
 
 func (p *Packet) AppendN(n int) *Packet {
 	if debug.Debug() && n == math.MaxInt {
-		slog.Warn("overflow warning", errorx.CallTrace())
+		slog.Warn("overflow warning", errorx.Trace(nil))
 	}
 
 	size := max(n, 0) + len(p.b)
@@ -142,7 +142,7 @@ func (p *Packet) AppendN(n int) *Packet {
 		p.b = p.b[:size]
 	} else {
 		if debug.Debug() {
-			slog.Warn("packet memory alloc", errorx.CallTrace())
+			slog.Warn("packet memory alloc", errorx.Trace(nil))
 		}
 
 		tmp := make([]byte, size, size+DefaulfTail)
