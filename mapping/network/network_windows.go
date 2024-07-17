@@ -4,12 +4,16 @@
 package network
 
 import (
+	"fmt"
+	"os/exec"
 	"strconv"
 	"sync"
 	"syscall"
 
+	"github.com/lysShub/netkit/debug"
 	netcall "github.com/lysShub/netkit/syscall"
 	"github.com/pkg/errors"
+	"github.com/shirou/gopsutil/v3/process"
 	"golang.org/x/sys/windows"
 )
 
@@ -206,10 +210,21 @@ func (n *upgrader) modelPath(pid uint32) (path string, err error) {
 	case 4:
 		path = SystemName
 	default:
-		// reference github.com/shirou/gopsutil/v3/process.Name
-
 		proc, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, pid)
 		if err != nil {
+			if debug.Debug() {
+				fmt.Println(pid)
+				out, _ := exec.Command("tasklist").CombinedOutput()
+				fmt.Println()
+				fmt.Println(string(out))
+				fmt.Println()
+				n, err := (&process.Process{Pid: int32(pid)}).Name()
+				fmt.Println("gopsutil", n, err)
+				fmt.Println()
+				proc, err = windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, pid)
+				fmt.Println("retry", proc, err == nil)
+			}
+
 			// windows.ERROR_ACCESS_DENIED
 			return "", errors.WithStack(errors.WithMessage(err, strconv.Itoa(int(pid))))
 		}
@@ -224,9 +239,17 @@ func (n *upgrader) modelPath(pid uint32) (path string, err error) {
 			return path, nil
 		}
 
+		if debug.Debug() {
+			println("QueryFullProcessImageNameW fail", err.Error())
+		}
+
 		if _, err := netcall.GetProcessImageFileNameW(proc, n.procpathBuff); err != nil {
 			return "", err
 		} else {
+			if debug.Debug() {
+				println("GetProcessImageFileNameW", windows.UTF16ToString(n.procpathBuff))
+			}
+
 			path, err = n.devicePath(n.procpathBuff)
 			if err != nil {
 				return "", err
@@ -255,9 +278,8 @@ func (u *upgrader) devicePath(dos []uint16) (string, error) {
 		}
 	}
 
+	var n, i int = 0, -1
 	const slash = '\\'
-
-	var n, i int
 	for ; i < len(dos); i++ {
 		if dos[i] == slash {
 			n += 1
@@ -265,6 +287,9 @@ func (u *upgrader) devicePath(dos []uint16) (string, error) {
 				break
 			}
 		}
+	}
+	if i == -1 {
+		return "", errors.Errorf("dos path %s", windows.UTF16ToString(dos))
 	}
 
 	var dosprefix = windows.UTF16ToString(dos[:i]) // \Device\HarddiskVolume1\

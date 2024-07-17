@@ -6,7 +6,7 @@ package network
 type network struct {
 }
 
-func New() *network {
+func New() (*network, error) {
 	panic("unimplement")
 }
 
