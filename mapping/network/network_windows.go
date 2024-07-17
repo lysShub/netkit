@@ -278,7 +278,7 @@ func (u *upgrader) devicePath(dos []uint16) (string, error) {
 		}
 	}
 
-	var n, i int = 0, -1
+	var n, i int
 	const slash = '\\'
 	for ; i < len(dos); i++ {
 		if dos[i] == slash {
@@ -288,7 +288,7 @@ func (u *upgrader) devicePath(dos []uint16) (string, error) {
 			}
 		}
 	}
-	if i == -1 {
+	if i < 5 {
 		return "", errors.Errorf("dos path %s", windows.UTF16ToString(dos))
 	}
 
