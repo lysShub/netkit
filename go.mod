@@ -6,7 +6,6 @@ require (
 	github.com/google/gopacket v1.1.19
 	github.com/mdlayher/arp v0.0.0-20220512170110-6706a2966875
 	github.com/pkg/errors v0.9.1
-	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.17.1
 	golang.org/x/net v0.20.0
@@ -27,6 +26,7 @@ require (
 	github.com/mdlayher/socket v0.2.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
+	github.com/shirou/gopsutil/v3 v3.24.5 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect

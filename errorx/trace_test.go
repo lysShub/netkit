@@ -42,23 +42,23 @@ func Test_Trace(t *testing.T) {
 
 		res1 := gjson.Get(out, "trace.0")
 		require.Equal(t, gjson.String, res1.Type)
-		require.Contains(t, res1.Str, "trace_test.go:17", out)
+		require.Contains(t, res1.Str, "trace_test.go:16", out)
 
 		res2 := gjson.Get(out, "trace.1")
 		require.Equal(t, gjson.String, res2.Type)
-		require.Contains(t, res2.Str, "trace_test.go:22", out)
+		require.Contains(t, res2.Str, "trace_test.go:21", out)
 
 		res3 := gjson.Get(out, "trace.2")
 		require.Equal(t, gjson.String, res3.Type)
-		require.Contains(t, res3.Str, "trace_test.go:34", out)
+		require.Contains(t, res3.Str, "trace_test.go:33", out)
 
 		res4 := gjson.Get(out, "trace.3")
 		require.Equal(t, gjson.String, res4.Type)
-		require.Contains(t, res4.Str, "trace_test.go:35", out)
+		require.Contains(t, res4.Str, "trace_test.go:34", out)
 
 		res5 := gjson.Get(out, "trace.4")
 		require.Equal(t, gjson.String, res5.Type)
-		require.Contains(t, res5.Str, "trace_test.go:42", out)
+		require.Contains(t, res5.Str, "trace_test.go:41", out)
 
 		res6 := gjson.Get(out, "trace.5")
 		require.Equal(t, gjson.Null, res6.Type)
