@@ -35,11 +35,12 @@ func Trace(err error) slog.Attr {
 	return slog.Attr{Key: "trace", Value: slog.GroupValue(attrs...)}
 }
 
+type trace interface{ StackTrace() errors.StackTrace }
+
 func ConcatTraceAndCallers(err error, callSkip int, pc []uintptr) []uintptr {
 	pc = pc[:0]
 
 	// get err with stack trace, only hit innermost
-	type trace interface{ StackTrace() errors.StackTrace }
 	var t trace
 	for e := err; e != nil; {
 		if e1, ok := e.(trace); ok {
@@ -52,33 +53,34 @@ func ConcatTraceAndCallers(err error, callSkip int, pc []uintptr) []uintptr {
 			pc = append(pc, uintptr(e))
 		}
 	}
-	epc := pc[:len(pc):cap(pc)] // err trace stack
-	cpc := pc[len(pc):cap(pc)]  // caller stack
-
-	// get call trace stack trace
-	cpc = cpc[:runtime.Callers(2+callSkip, cpc)]
-
 	// remove runtime position, like:
 	//     C:/Go/src/runtime/proc.go:271
 	//     C:/Go/src/runtime/asm_amd64.s:1695
-	cpc = cpc[:max(len(cpc)-2, 0)]
+	pc = pc[:max(len(pc)-2, 0)]
+
+	errorsPc := pc[:len(pc):cap(pc)]
+	callerPc := pc[len(pc):cap(pc)]
+
+	// get call trace stack trace
+	callerPc = callerPc[:runtime.Callers(2+callSkip, callerPc)]
+	callerPc = callerPc[:max(len(callerPc)-2, 0)]
 
 	var i int
-	for j, p := range cpc {
-		i = slices.Index(epc, p)
+	for j, p := range callerPc {
+		i = slices.Index(errorsPc, p)
 		if i >= 0 {
 			// add self caller positon
-			epc = append(epc[:i], cpc[0])
+			errorsPc = append(errorsPc[:i], callerPc[0])
 
 			// append caller trace
-			epc = append(epc, cpc[j:]...)
+			errorsPc = append(errorsPc, callerPc[j:]...)
 			break
 		}
 	}
 	if i < 0 {
-		return pc[:len(epc)+len(cpc)]
+		return pc[:len(errorsPc)+len(callerPc)]
 	} else {
-		return epc
+		return errorsPc
 	}
 }
 
