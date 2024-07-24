@@ -78,4 +78,15 @@ func Test_Trace(t *testing.T) {
 		res2 := gjson.Get(out, "trace.1")
 		require.Equal(t, gjson.Null, res2.Type)
 	})
+
+	t.Run("global err", func(t *testing.T) {
+		b := bytes.NewBuffer(nil)
+		l := slog.New(slog.NewJSONHandler(b, nil))
+
+		l.Error(" ", errorx.Trace(globalErr))
+		out := b.String()
+		require.Contains(t, out, "trace_test.go:86")
+	})
 }
+
+var globalErr = errors.New("global error")

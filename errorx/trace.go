@@ -16,7 +16,27 @@ import (
 //
 //	slog.Error(err.Error(), errorx.Trace(err))
 func Trace(err error) slog.Attr {
-	var pcs []uintptr
+	var pc = make([]uintptr, 36)
+	pc = ConcatTraceAndCallers(err, 1, pc)
+
+	var attrs []slog.Attr
+	fs := runtime.CallersFrames(pc)
+	for {
+		f, more := fs.Next()
+
+		attrs = append(attrs, slog.Attr{
+			Key:   strconv.Itoa(len(attrs)),
+			Value: slog.StringValue(fmt.Sprintf("%s:%d", f.File, f.Line)),
+		})
+		if !more {
+			break
+		}
+	}
+	return slog.Attr{Key: "trace", Value: slog.GroupValue(attrs...)}
+}
+
+func ConcatTraceAndCallers(err error, callSkip int, pc []uintptr) []uintptr {
+	pc = pc[:0]
 
 	// get err with stack trace, only hit innermost
 	type trace interface{ StackTrace() errors.StackTrace }
@@ -29,39 +49,55 @@ func Trace(err error) slog.Attr {
 	}
 	if t != nil {
 		for _, e := range t.StackTrace() {
-			pcs = append(pcs, uintptr(e))
+			pc = append(pc, uintptr(e))
 		}
 	}
+	epc := pc[:len(pc):cap(pc)] // err trace stack
+	cpc := pc[len(pc):cap(pc)]  // caller stack
 
-	// get call Trace stack trace
-	var pc2 = make([]uintptr, 16)
-	pc2 = pc2[:runtime.Callers(2, pc2)]
-	if len(pcs) > 1 {
-		for j, pc := range pc2 {
-			i := slices.Index(pcs, pc)
-			if i >= 0 {
-				pcs = append(pcs[:i], pc2[0])
-				pcs = append(pcs, pc2[j:]...)
-				break
-			}
-		}
-	} else {
-		pcs = append(pcs, pc2...)
-	}
+	// get call trace stack trace
+	cpc = cpc[:runtime.Callers(2+callSkip, cpc)]
 
-	var attrs []slog.Attr
-	fs := runtime.CallersFrames(pcs[:max(len(pcs)-2, 0)])
-	for {
-		f, more := fs.Next()
+	// remove runtime position, like:
+	//     C:/Go/src/runtime/proc.go:271
+	//     C:/Go/src/runtime/asm_amd64.s:1695
+	cpc = cpc[:max(len(cpc)-2, 0)]
 
-		attrs = append(attrs, slog.Attr{
-			Key:   strconv.Itoa(len(attrs)),
-			Value: slog.StringValue(fmt.Sprintf("%s:%d", f.File, f.Line)),
-		})
-		if !more {
+	var i int
+	for j, p := range cpc {
+		i = slices.Index(epc, p)
+		if i >= 0 {
+			// add self caller positon
+			epc = append(epc[:i], cpc[0])
+
+			// append caller trace
+			epc = append(epc, cpc[j:]...)
 			break
 		}
 	}
-
-	return slog.Attr{Key: "trace", Value: slog.GroupValue(attrs...)}
+	if i < 0 {
+		return pc[:len(epc)+len(cpc)]
+	} else {
+		return epc
+	}
 }
+
+/*
+func position(p uintptr) string {
+	pc := uintptr(p) - 1
+	fn := runtime.FuncForPC(pc)
+	if fn == nil {
+		return "not func"
+	}
+	file, line := fn.FileLine(pc)
+	// file = relpath(file)
+	strn := strconv.Itoa(line)
+
+	b := strings.Builder{}
+	b.Grow(len(file) + 1 + len(strn))
+	b.WriteString(file)
+	b.WriteRune(':')
+	b.WriteString(strn)
+	return b.String()
+}
+*/
