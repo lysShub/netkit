@@ -18,26 +18,8 @@ import (
 //
 //	slog.Error(err.Error(), errorx.Trace(err))
 func Trace(err error) slog.Attr {
-	p := getPc()
-	defer putPc(p)
-	pc := unsafe.Slice((*uintptr)(unsafe.Pointer(p)), size)
-
-	pc = ConcatTraceAndCallers(err, 1, pc)
-
-	var attrs []slog.Attr
-	fs := runtime.CallersFrames(pc)
-	for {
-		f, more := fs.Next()
-
-		attrs = append(attrs, slog.Attr{
-			Key:   strconv.Itoa(len(attrs)),
-			Value: slog.StringValue(fmt.Sprintf("%s:%d", f.File, f.Line)),
-		})
-		if !more {
-			break
-		}
-	}
-	return slog.Attr{Key: "trace", Value: slog.AnyValue(Frames(slices.Clone(pc)))}
+	pc := ConcatTraceAndCallers(err, 1)
+	return slog.Attr{Key: "trace", Value: slog.AnyValue(pc)}
 }
 
 type Frames []uintptr
@@ -59,29 +41,13 @@ func (t Frames) LogValue() slog.Value {
 	return slog.GroupValue(attrs...)
 }
 
-const size = 64
-
-var pcPool = sync.Pool{
-	New: func() any {
-		return &([size]uintptr{})
-	},
-}
-
-func getPc() *[size]uintptr {
-	return pcPool.Get().(*[size]uintptr)
-}
-func putPc(p *[size]uintptr) {
-	if p != nil {
-		pcPool.Put(p)
-	}
-}
-
-type trace interface{ StackTrace() errors.StackTrace }
-
-func ConcatTraceAndCallers(err error, callSkip int, pc []uintptr) []uintptr {
-	pc = pc[:0]
+func ConcatTraceAndCallers(err error, callSkip int) []uintptr {
+	p := getPc()
+	defer putPc(p)
+	pc := unsafe.Slice((*uintptr)(unsafe.Pointer(p)), size)
 
 	// get err with stack trace, only hit innermost
+	type trace interface{ StackTrace() errors.StackTrace }
 	var t trace
 	for e := err; e != nil; {
 		if e1, ok := e.(trace); ok {
@@ -119,28 +85,25 @@ func ConcatTraceAndCallers(err error, callSkip int, pc []uintptr) []uintptr {
 		}
 	}
 	if i < 0 {
-		return pc[:len(errorsPc)+len(callerPc)]
+		return Frames(slices.Clone(pc[:len(errorsPc)+len(callerPc)]))
 	} else {
-		return errorsPc
+		return Frames(slices.Clone(errorsPc))
 	}
 }
 
-/*
-func position(p uintptr) string {
-	pc := uintptr(p) - 1
-	fn := runtime.FuncForPC(pc)
-	if fn == nil {
-		return "not func"
-	}
-	file, line := fn.FileLine(pc)
-	// file = relpath(file)
-	strn := strconv.Itoa(line)
+const size = 64
 
-	b := strings.Builder{}
-	b.Grow(len(file) + 1 + len(strn))
-	b.WriteString(file)
-	b.WriteRune(':')
-	b.WriteString(strn)
-	return b.String()
+var pcPool = sync.Pool{
+	New: func() any {
+		return &([size]uintptr{})
+	},
 }
-*/
+
+func getPc() *[size]uintptr {
+	return pcPool.Get().(*[size]uintptr)
+}
+func putPc(p *[size]uintptr) {
+	if p != nil {
+		pcPool.Put(p)
+	}
+}
