@@ -83,7 +83,10 @@ func Test_Trace(t *testing.T) {
 		b := bytes.NewBuffer(nil)
 		l := slog.New(slog.NewJSONHandler(b, nil))
 
-		l.Error(" ", errorx.Trace(globalErr))
+		a := errorx.Trace(globalErr)
+		require.Equal(t, slog.KindLogValuer, a.Value.Kind())
+
+		l.Error(" ", a)
 		out := b.String()
 		require.Contains(t, out, "trace_test.go:86")
 	})

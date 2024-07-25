@@ -6,6 +6,8 @@ import (
 	"runtime"
 	"slices"
 	"strconv"
+	"sync"
+	"unsafe"
 
 	"github.com/pkg/errors"
 )
@@ -16,7 +18,10 @@ import (
 //
 //	slog.Error(err.Error(), errorx.Trace(err))
 func Trace(err error) slog.Attr {
-	var pc = make([]uintptr, 36)
+	p := getPc()
+	defer putPc(p)
+	pc := unsafe.Slice((*uintptr)(unsafe.Pointer(p)), size)
+
 	pc = ConcatTraceAndCallers(err, 1, pc)
 
 	var attrs []slog.Attr
@@ -32,7 +37,43 @@ func Trace(err error) slog.Attr {
 			break
 		}
 	}
-	return slog.Attr{Key: "trace", Value: slog.GroupValue(attrs...)}
+	return slog.Attr{Key: "trace", Value: slog.AnyValue(Frames(slices.Clone(pc)))}
+}
+
+type Frames []uintptr
+
+func (t Frames) LogValue() slog.Value {
+	var attrs []slog.Attr
+	fs := runtime.CallersFrames(t)
+	for {
+		f, more := fs.Next()
+
+		attrs = append(attrs, slog.Attr{
+			Key:   strconv.Itoa(len(attrs)),
+			Value: slog.StringValue(fmt.Sprintf("%s:%d", f.File, f.Line)),
+		})
+		if !more {
+			break
+		}
+	}
+	return slog.GroupValue(attrs...)
+}
+
+const size = 64
+
+var pcPool = sync.Pool{
+	New: func() any {
+		return &([size]uintptr{})
+	},
+}
+
+func getPc() *[size]uintptr {
+	return pcPool.Get().(*[size]uintptr)
+}
+func putPc(p *[size]uintptr) {
+	if p != nil {
+		pcPool.Put(p)
+	}
 }
 
 type trace interface{ StackTrace() errors.StackTrace }
