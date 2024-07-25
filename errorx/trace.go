@@ -17,6 +17,8 @@ import (
 // Example:
 //
 //	slog.Error(err.Error(), errorx.Trace(err))
+//
+//go:noinline
 func Trace(err error) slog.Attr {
 	pc := ConcatTraceAndCallers(err, 1)
 	return slog.Attr{Key: "trace", Value: slog.AnyValue(pc)}
@@ -24,9 +26,9 @@ func Trace(err error) slog.Attr {
 
 type Frames []uintptr
 
-func (t Frames) LogValue() slog.Value {
+func (f Frames) LogValue() slog.Value {
 	var attrs []slog.Attr
-	fs := runtime.CallersFrames(t)
+	fs := runtime.CallersFrames(f)
 	for {
 		f, more := fs.Next()
 
@@ -41,10 +43,11 @@ func (t Frames) LogValue() slog.Value {
 	return slog.GroupValue(attrs...)
 }
 
-func ConcatTraceAndCallers(err error, callSkip int) []uintptr {
+//go:noinline
+func ConcatTraceAndCallers(err error, callSkip int) Frames {
 	p := getPc()
 	defer putPc(p)
-	pc := unsafe.Slice((*uintptr)(unsafe.Pointer(p)), size)
+	pc := unsafe.Slice((*uintptr)(unsafe.Pointer(p)), size)[:0]
 
 	// get err with stack trace, only hit innermost
 	type trace interface{ StackTrace() errors.StackTrace }
