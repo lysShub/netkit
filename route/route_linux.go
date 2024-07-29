@@ -60,6 +60,7 @@ func GetTable() (Table, error) {
 				}
 				e.Addr = addr.Addr()
 			}
+			e.raw = attrs
 
 			table = append(table, e)
 		case unix.NLMSG_DONE:

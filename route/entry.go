@@ -43,7 +43,7 @@ func (e Entry) Equal(entry Entry) bool {
 		e.Metric == entry.Metric
 }
 
-func (e Entry) string(p *printer) {
+func (e Entry) string(p *stringer) {
 	next := e.Next.String()
 	if !e.Next.IsValid() {
 		next = ""
@@ -60,16 +60,17 @@ func (e Entry) string(p *printer) {
 		e.Dest.String(), next, ifstr, strconv.Itoa(int(e.Metric)),
 	)
 }
+func (e Entry) Raw() EntryRaw { return e.raw }
 
 const printCols = 4
 
-type printer struct {
+type stringer struct {
 	maxs  [printCols]int
 	elems []string
 }
 
-func newPrinter() *printer {
-	var p = &printer{
+func newPrinter() *stringer {
+	var p = &stringer{
 		elems: make([]string, 0, 16),
 	}
 	p.append(
@@ -78,7 +79,7 @@ func newPrinter() *printer {
 	return p
 }
 
-func (p *printer) append(es ...string) {
+func (p *stringer) append(es ...string) {
 	for _, e := range es {
 		p.elems = append(p.elems, e)
 
@@ -87,7 +88,7 @@ func (p *printer) append(es ...string) {
 	}
 }
 
-func (p *printer) string() string {
+func (p *stringer) string() string {
 	var b = &strings.Builder{}
 	for i, e := range p.elems {
 		fixWrite(b, e, p.maxs[i%printCols]+4)
@@ -101,5 +102,7 @@ func (p *printer) string() string {
 func fixWrite(s *strings.Builder, str string, size int) {
 	s.WriteString(str)
 	n := size - len(str)
-	s.WriteString(strings.Repeat(" ", n))
+	for i := 0; i < n; i++ {
+		s.WriteByte(' ')
+	}
 }

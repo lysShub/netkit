@@ -3,9 +3,13 @@
 
 package route
 
-import netcall "github.com/lysShub/netkit/syscall"
+import (
+	"syscall"
 
-type EntryRaw struct{}
+	netcall "github.com/lysShub/netkit/syscall"
+)
+
+type EntryRaw []syscall.NetlinkRouteAttr
 
 func (e *Entry) Name() (string, error) {
 	return netcall.IoctlGifname(int(e.Interface))
