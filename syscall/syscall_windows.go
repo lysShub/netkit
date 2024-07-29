@@ -16,13 +16,15 @@ import (
 )
 
 var (
-	iphlpapi                = windows.NewLazySystemDLL("iphlpapi.dll")
-	procGetIpForwardTable   = iphlpapi.NewProc("GetIpForwardTable")
-	procGetIpAddrTable      = iphlpapi.NewProc("GetIpAddrTable")
-	procGetIpForwardEntry2  = iphlpapi.NewProc("GetIpForwardEntry2")
-	procGetIpInterfaceEntry = iphlpapi.NewProc("GetIpInterfaceEntry")
-	procGetExtendedTcpTable = iphlpapi.NewProc("GetExtendedTcpTable")
-	procGetExtendedUdpTable = iphlpapi.NewProc("GetExtendedUdpTable")
+	iphlpapi                        = windows.NewLazySystemDLL("iphlpapi.dll")
+	procGetIpForwardTable           = iphlpapi.NewProc("GetIpForwardTable")
+	procGetIpAddrTable              = iphlpapi.NewProc("GetIpAddrTable")
+	procGetIpForwardEntry2          = iphlpapi.NewProc("GetIpForwardEntry2")
+	procGetIpInterfaceEntry         = iphlpapi.NewProc("GetIpInterfaceEntry")
+	procGetExtendedTcpTable         = iphlpapi.NewProc("GetExtendedTcpTable")
+	procGetExtendedUdpTable         = iphlpapi.NewProc("GetExtendedUdpTable")
+	procIfIndexToName               = iphlpapi.NewProc("if_indextoname")
+	procConvertInterfaceLuidToAlias = iphlpapi.NewProc("ConvertInterfaceLuidToAlias")
 
 	kernel32                       = windows.NewLazySystemDLL("kernel32.dll")
 	procQueryFullProcessImageNameW = kernel32.NewProc("QueryFullProcessImageNameW")
@@ -298,11 +300,14 @@ func GetExtendedUdpTable(table MibUdpTableOwnerPid, size *uint32, order bool) er
 }
 
 const SIO_RCVALL = windows.IOC_IN | windows.IOC_VENDOR | 1
+
+type recvall = uint32
+
 const (
-	RCVALL_OFF             = 0
-	RCVALL_ON              = 1
-	RCVALL_SOCKETLEVELONLY = 2
-	RCVALL_IPLEVEL         = 3
+	RCVALL_OFF             recvall = 0
+	RCVALL_ON              recvall = 1
+	RCVALL_SOCKETLEVELONLY recvall = 2
+	RCVALL_IPLEVEL         recvall = 3
 )
 
 // https://learn.microsoft.com/en-us/windows/win32/winsock/sio-rcvall
@@ -310,16 +315,16 @@ type Recvall struct {
 	fd windows.Handle
 }
 
-func NewRecvall(laddr netip.Addr, proto int, value uint32) (*Recvall, error) {
+func NewRecvall(laddr netip.Addr, proto int, recvall recvall) (*Recvall, error) {
 	switch proto {
 	case windows.IPPROTO_IP, windows.IPPROTO_IPV6:
 	default:
 		return nil, errors.Errorf("invalid ip protocol %d", proto)
 	}
-	switch value {
+	switch recvall {
 	case RCVALL_OFF, RCVALL_ON, RCVALL_SOCKETLEVELONLY, RCVALL_IPLEVEL:
 	default:
-		return nil, errors.Errorf("invalid recvall value %d", value)
+		return nil, errors.Errorf("invalid recvall value %d", recvall)
 	}
 
 	fd, err := windows.Socket(windows.AF_INET, windows.SOCK_RAW, int(proto))
@@ -346,15 +351,15 @@ func NewRecvall(laddr netip.Addr, proto int, value uint32) (*Recvall, error) {
 	// set SIO_RCVALL io control, on windows, net.IPConn only can read packet than not match
 	// any socket.
 	if err := windows.WSAIoctl(
-		fd,                              // descriptor identifying a socket
-		SIO_RCVALL,                      // dwIoControlCode
-		(*byte)(unsafe.Pointer(&value)), // lpvInBuffer
-		uint32(unsafe.Sizeof(value)),    // cbInBuffer
-		nil,                             // lpvOutBuffer output buffer
-		0,                               // size of output buffer
-		new(uint32),                     // number of bytes returned
-		nil,                             // OVERLAPPED structure
-		0,                               // completion routine
+		fd,                                // descriptor identifying a socket
+		SIO_RCVALL,                        // dwIoControlCode
+		(*byte)(unsafe.Pointer(&recvall)), // lpvInBuffer
+		uint32(unsafe.Sizeof(recvall)),    // cbInBuffer
+		nil,                               // lpvOutBuffer output buffer
+		0,                                 // size of output buffer
+		new(uint32),                       // number of bytes returned
+		nil,                               // OVERLAPPED structure
+		0,                                 // completion routine
 	); err != nil {
 		windows.Close(fd)
 		return nil, errors.WithStack(err)
@@ -409,7 +414,6 @@ func GetProcessImageFileNameW(proc windows.Handle, name []uint16) (uint32, error
 }
 
 func QueryDosDeviceW(deviceName string, TargetPath []uint16) error {
-
 	var namePrt uintptr
 	if len(deviceName) > 0 {
 		n, err := windows.UTF16PtrFromString(deviceName)
@@ -429,4 +433,63 @@ func QueryDosDeviceW(deviceName string, TargetPath []uint16) error {
 		return errors.WithStack(e)
 	}
 	return nil
+}
+
+const IF_NAMESIZE = 256
+
+// not alias name
+func IfIndexToName(ifidx int) (string, error) {
+	var b [IF_NAMESIZE]byte
+	r1, _, e := syscall.SyscallN(
+		procIfIndexToName.Addr(),
+		uintptr(ifidx),
+		uintptr(unsafe.Pointer(&b[0])),
+	)
+	if r1 == 0 {
+		if e != windows.NOERROR {
+			return "", errors.WithStack(e)
+		}
+		return "", errors.WithStack(windows.ERROR_FILE_NOT_FOUND)
+	}
+
+	var n int = IF_NAMESIZE
+	for i, e := range b {
+		if e == 0 {
+			n = i
+			break
+		}
+	}
+	var s = make([]byte, n)
+	copy(s, b[:])
+	return string(s), nil
+}
+
+func ConvertInterfaceIndexToLuid(idx uint32) (luid winipcfg.LUID, err error) {
+	luid, err = winipcfg.LUIDFromIndex(idx)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return luid, nil
+}
+
+func ConvertInterfaceLuidToAlias(luid uint64) (string, error) {
+	var buff = make([]uint16, 16)
+	for {
+		r1, _, _ := syscall.SyscallN(
+			procConvertInterfaceLuidToAlias.Addr(),
+			uintptr(unsafe.Pointer(&luid)),
+			uintptr(unsafe.Pointer(&buff[0])),
+			uintptr(len(buff)),
+		)
+		if e := windows.Errno(r1); e != windows.NO_ERROR {
+			if e == windows.ERROR_NOT_ENOUGH_MEMORY {
+				buff = append(buff, 0)
+				buff = buff[:cap(buff)]
+				continue
+			}
+			return "", errors.WithStack(e)
+		}
+
+		return windows.UTF16ToString(buff), nil
+	}
 }

@@ -15,12 +15,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-type EntryRaw struct{}
-
-func (e *Entry) Name() (string, error) {
-	return netcall.IoctlGifname(int(e.Interface))
-}
-
 func (e *Entry) HardwareAddr() (net.HardwareAddr, error) {
 	name, err := e.Name()
 	if err != nil {

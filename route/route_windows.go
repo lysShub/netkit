@@ -13,8 +13,6 @@ import (
 	"golang.zx2c4.com/wireguard/windows/tunnel/winipcfg"
 )
 
-type EntryRaw = winipcfg.MibIPforwardRow2
-
 // GetTable get ipv4 route entries
 func GetTable() (table Table, err error) {
 	rows, err := winipcfg.GetIPForwardTable2(windows.AF_INET)

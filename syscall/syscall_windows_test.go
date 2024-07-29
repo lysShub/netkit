@@ -1,6 +1,7 @@
 package syscall_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -87,4 +88,37 @@ func Test_QueryDosDeviceW(t *testing.T) {
 	// str := string(ss)
 	// fmt.Println(str)
 
+}
+
+func Test_IfIndexToName(t *testing.T) {
+	t.Run("normal", func(t *testing.T) {
+		n, err := netcall.IfIndexToName(2)
+		require.NoError(t, err)
+		require.Greater(t, len(n), 0, n)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		_, err := netcall.IfIndexToName(111)
+		require.True(t, errors.Is(err, windows.ERROR_FILE_NOT_FOUND))
+	})
+
+}
+
+func Test_ConvertInterfaceLuidToAlias(t *testing.T) {
+
+	t.Run("normal", func(t *testing.T) {
+		id, err := netcall.ConvertInterfaceIndexToLuid(2)
+		require.NoError(t, err)
+
+		n, err := netcall.ConvertInterfaceLuidToAlias(uint64(id))
+		require.NoError(t, err)
+		require.Greater(t, len(n), 0, n)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		var id uint64 = 12345678
+
+		_, err := netcall.ConvertInterfaceLuidToAlias(id)
+		require.True(t, errors.Is(err, windows.ERROR_FILE_NOT_FOUND))
+	})
 }
