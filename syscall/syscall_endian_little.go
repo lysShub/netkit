@@ -5,6 +5,8 @@ package syscall
 
 import "golang.org/x/exp/constraints"
 
+const BigEndian = false
+
 // Hton transport host-byte-order to network-byte-order(big endian)
 func Hton[T constraints.Float | constraints.Integer](v T) T {
 	return ReserveByte(v)
