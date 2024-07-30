@@ -3,12 +3,14 @@
 
 package syscall
 
+import "golang.org/x/exp/constraints"
+
 // Hton transport host-byte-order to network-byte-order(big endian)
-func Hton[T ~uint16 | ~uint32 | ~uint64](v T) T {
+func Hton[T constraints.Float | constraints.Integer](v T) T {
 	return ReserveByte(v)
 }
 
 // Ntoh transport network-byte-order(big endian) to host-byte-order
-func Ntoh[T ~uint16 | ~uint32 | ~uint64](v T) T {
+func Ntoh[T constraints.Float | constraints.Integer](v T) T {
 	return ReserveByte(v)
 }

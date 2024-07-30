@@ -7,18 +7,16 @@ import (
 	"unsafe"
 
 	"github.com/pkg/errors"
+	"golang.org/x/exp/constraints"
 	"gvisor.dev/gvisor/pkg/tcpip/checksum"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
-func ReserveByte[T ~uint16 | ~uint32 | ~uint64](v T) T {
-	n := unsafe.Sizeof(v)
-
+func ReserveByte[T constraints.Float | constraints.Integer](v T) T {
 	s := unsafe.Slice(
-		(*byte)(unsafe.Pointer(&v)), n,
+		(*byte)(unsafe.Pointer(&v)), unsafe.Sizeof(v),
 	)
 	slices.Reverse(s)
-
 	return *(*T)(unsafe.Pointer(unsafe.SliceData(s)))
 }
 
