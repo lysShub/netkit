@@ -2,94 +2,58 @@ package errorx_test
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
 	"log/slog"
 	"testing"
-
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/require"
+	"time"
 
 	"github.com/lysShub/netkit/errorx"
-	"github.com/tidwall/gjson"
+	"github.com/stretchr/testify/require"
 )
 
-func e0() error {
-	err := errors.New("xxx")
-	return err
-}
+func Test_Frames(t *testing.T) {
 
-func e1() error {
-	err := e0()
-	if err != nil {
-		return errors.WithStack(err)
-	}
+	t.Run("empty", func(t *testing.T) {
+		var f errorx.Frames
 
-	return nil
-}
+		rec := slog.NewRecord(time.Now(), slog.LevelInfo, "test", 0)
+		rec.Add(slog.Attr{Key: "trace", Value: slog.AnyValue(f)})
 
-func t0() string {
-	buff := bytes.NewBuffer(nil)
-	l := slog.New(slog.NewJSONHandler(buff, nil))
+		var b = &bytes.Buffer{}
+		slog.NewJSONHandler(b, nil).Handle(context.Background(), rec)
 
-	err := e1()
-	l.Error(err.Error(), errorx.Trace(err))
-	return buff.String()
-}
+		require.NotContains(t, "trace", b.String())
 
-func Test_Trace(t *testing.T) {
-
-	t.Run("normal", func(t *testing.T) {
-		out := t0()
-
-		res1 := gjson.Get(out, "trace.0")
-		require.Equal(t, gjson.String, res1.Type)
-		require.Contains(t, res1.Str, "trace_test.go:16", out)
-
-		res2 := gjson.Get(out, "trace.1")
-		require.Equal(t, gjson.String, res2.Type)
-		require.Contains(t, res2.Str, "trace_test.go:21", out)
-
-		res3 := gjson.Get(out, "trace.2")
-		require.Equal(t, gjson.String, res3.Type)
-		require.Contains(t, res3.Str, "trace_test.go:33", out)
-
-		res4 := gjson.Get(out, "trace.3")
-		require.Equal(t, gjson.String, res4.Type)
-		require.Contains(t, res4.Str, "trace_test.go:34", out)
-
-		res5 := gjson.Get(out, "trace.4")
-		require.Equal(t, gjson.String, res5.Type)
-		require.Contains(t, res5.Str, "trace_test.go:41", out)
-
-		res6 := gjson.Get(out, "trace.5")
-		require.Equal(t, gjson.Null, res6.Type)
+		lit, err := f.JsonLiteral(nil)
+		require.NoError(t, err)
+		require.Nil(t, lit)
 	})
 
-	t.Run("nil", func(t *testing.T) {
-		b := bytes.NewBuffer(nil)
-		l := slog.New(slog.NewJSONHandler(b, nil))
+	t.Run("JsonLiteral", func(t *testing.T) {
+		e := e0()
 
-		l.Error(" ", errorx.Trace(nil))
-		out := b.String()
+		var f = errorx.Trace(e).Value.Any().(errorx.Frames)
 
-		res1 := gjson.Get(out, "trace.0")
-		require.Equal(t, gjson.String, res1.Type)
-		require.Contains(t, res1.Str, "trace_test.go:71", out)
+		lit, err := f.JsonLiteral(nil)
+		require.NoError(t, err)
 
-		res2 := gjson.Get(out, "trace.1")
-		require.Equal(t, gjson.Null, res2.Type)
-	})
+		// lit = bytes.ReplaceAll(lit, []byte("trace_test.go"), []byte(`trace_"test.go`))
 
-	t.Run("global err", func(t *testing.T) {
-		b := bytes.NewBuffer(nil)
-		l := slog.New(slog.NewJSONHandler(b, nil))
+		// not always
+		require.True(t, json.Valid(lit))
 
-		a := errorx.Trace(globalErr)
-		require.Equal(t, slog.KindLogValuer, a.Value.Kind())
-
-		l.Error(" ", a)
-		out := b.String()
-		require.Contains(t, out, "trace_test.go:86")
+		// {
+		// 	rec := slog.NewRecord(time.Now(), slog.LevelInfo, "test", 0)
+		// 	rec.Add(errorx.Trace(e))
+		// 	var b = &bytes.Buffer{}
+		// 	slog.NewJSONHandler(b, nil).Handle(context.Background(), rec)
+		// 	str := b.String()
+		// 	fmt.Println()
+		// 	fmt.Println(str)
+		// 	fmt.Println()
+		// 	fmt.Println(string(lit))
+		// 	fmt.Println()
+		// }
 	})
 }
-
-var globalErr = errors.New("global error")

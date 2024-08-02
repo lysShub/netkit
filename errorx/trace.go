@@ -27,6 +27,10 @@ func Trace(err error) slog.Attr {
 type Frames []uintptr
 
 func (f Frames) LogValue() slog.Value {
+	if len(f) == 0 {
+		return slog.GroupValue()
+	}
+
 	var attrs []slog.Attr
 	fs := runtime.CallersFrames(f)
 	for {
@@ -41,6 +45,35 @@ func (f Frames) LogValue() slog.Value {
 		}
 	}
 	return slog.GroupValue(attrs...)
+}
+
+func (f Frames) JsonLiteral(dst []byte) ([]byte, error) {
+	if len(f) == 0 {
+		return dst, nil
+	}
+
+	dst = append(dst, '{')
+
+	fs := runtime.CallersFrames(f)
+	for i := 0; ; i++ {
+		f, more := fs.Next()
+
+		dst = append(dst, '"')
+		dst = strconv.AppendInt(dst, int64(i), 10)
+		dst = append(dst, '"', ':', '"')
+		dst = append(dst, f.File...)
+		dst = append(dst, ':')
+		dst = strconv.AppendInt(dst, int64(f.Line), 10)
+		dst = append(dst, '"', ',')
+
+		if !more {
+			break
+		}
+	}
+
+	dst[len(dst)-1] = '}'
+
+	return dst, nil
 }
 
 //go:noinline
