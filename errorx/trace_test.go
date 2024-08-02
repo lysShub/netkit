@@ -40,20 +40,7 @@ func Test_Frames(t *testing.T) {
 
 		// lit = bytes.ReplaceAll(lit, []byte("trace_test.go"), []byte(`trace_"test.go`))
 
-		// not always
+		// not always, depend on the paths has json escape ident
 		require.True(t, json.Valid(lit))
-
-		// {
-		// 	rec := slog.NewRecord(time.Now(), slog.LevelInfo, "test", 0)
-		// 	rec.Add(errorx.Trace(e))
-		// 	var b = &bytes.Buffer{}
-		// 	slog.NewJSONHandler(b, nil).Handle(context.Background(), rec)
-		// 	str := b.String()
-		// 	fmt.Println()
-		// 	fmt.Println(str)
-		// 	fmt.Println()
-		// 	fmt.Println(string(lit))
-		// 	fmt.Println()
-		// }
 	})
 }

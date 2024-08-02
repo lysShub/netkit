@@ -97,16 +97,15 @@ func ConcatTraceAndCallers(err error, callSkip int) Frames {
 		}
 	}
 	// remove runtime position, like:
-	//     C:/Go/src/runtime/proc.go:271
 	//     C:/Go/src/runtime/asm_amd64.s:1695
-	pc = pc[:max(len(pc)-2, 0)]
+	pc = pc[:max(len(pc)-1, 0)]
 
 	errorsPc := pc[:len(pc):cap(pc)]
 	callerPc := pc[len(pc):cap(pc)]
 
 	// get call trace stack trace
 	callerPc = callerPc[:runtime.Callers(2+callSkip, callerPc)]
-	callerPc = callerPc[:max(len(callerPc)-2, 0)]
+	callerPc = callerPc[:max(len(callerPc)-1, 0)]
 
 	var i int
 	for j, p := range callerPc {
