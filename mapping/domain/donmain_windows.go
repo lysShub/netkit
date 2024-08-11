@@ -3,21 +3,57 @@
 
 package domain
 
-import "net"
+import (
+	"github.com/lysShub/divert-go"
+	"github.com/lysShub/netkit/errorx"
+	"github.com/lysShub/netkit/packet"
+	"gvisor.dev/gvisor/pkg/tcpip/header"
+)
 
-type domain struct {
-	conn *net.IPConn
+type divertCapture struct {
+	handle *divert.Handle
+
+	closeErr errorx.CloseErr
 }
 
-func New() *domain {
+func newDivertCapture() (capture, error) {
+	if err := divert.Load(divert.DLL); err != nil && !errorx.Temporary(err) {
+		return nil, err
+	}
+
+	var g = &divertCapture{}
+	var err error
+
+	var filter = "inbound and ip and udp and remotePort=53"
+	g.handle, err = divert.Open(filter, divert.Network, 0, divert.Sniff|divert.ReadOnly)
+	if err != nil {
+		return nil, g.close(err)
+	}
+	return g, nil
+}
+
+func (c *divertCapture) close(cause error) error {
+	return c.closeErr.Close(func() (errs []error) {
+		errs = append(errs, cause)
+		if c.handle != nil {
+			errs = append(errs, c.handle.Close())
+		}
+		return errs
+	})
+}
+
+func (c *divertCapture) Capture(b *packet.Packet) error {
+	n, err := c.handle.Recv(b.Bytes(), nil)
+	if err != nil {
+		return err
+	} else if n == 0 {
+		return c.Capture(b)
+	}
+	b.SetData(n)
+
+	ip := header.IPv4(b.Bytes())
+	b.DetachN(int(ip.HeaderLength()) + header.UDPMinimumSize)
 	return nil
 }
 
-func newDomain() *domain {
-	// conn, err := net.ListenIP("udp4", &net.IPAddr{})
-	return nil
-}
-
-func (d *domain) service() (_ error) {
-	return
-}
+func (c *divertCapture) Close() error { return c.close(nil) }
