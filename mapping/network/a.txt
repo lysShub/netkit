@@ -1,0 +1,378 @@
+QueryFullProcessImageNameW fail Access is denied.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+   ping   85.0   89.4
+    pl↑   00.0   00.0
+    pl↓   00.0   00.0
+
+
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+QueryFullProcessImageNameW fail A device attached to the system is not functioning.
+GetProcessImageFileNameW \Device\HarddiskVolume2\Windows\System32\DriverStore\FileRepository\nv_dispi.inf_amd64_31dab972145ae5a9\nvngx_update.exe
+18664
+
+
+ӳ������                       PID �Ự��              �Ự#       �ڴ�ʹ��        
+========================= ======== ================ =========== ============
+System Idle Process              0 Services                   0          8 K
+System                           4 Services                   0     11,260 K
+Secure System                   88 Services                   0     73,304 K
+Registry                       156 Services                   0     39,496 K
+smss.exe                       508 Services                   0        956 K
+csrss.exe                      688 Services                   0      3,608 K
+wininit.exe                    780 Services                   0      3,340 K   
+csrss.exe                      788 Console                    1      5,472 K   
+services.exe                   852 Services                   0     10,824 K   
+LsaIso.exe                     860 Services                   0      1,732 K   
+lsass.exe                      880 Services                   0     23,524 K   
+svchost.exe                   1012 Services                   0     52,712 K   
+fontdrvhost.exe                484 Services                   0      1,596 K   
+WUDFHost.exe                   584 Services                   0      3,904 K   
+winlogon.exe                  1044 Console                    1      7,792 K   
+svchost.exe                   1120 Services                   0     22,212 K   
+fontdrvhost.exe               1180 Console                    1     50,416 K   
+svchost.exe                   1220 Services                   0      6,772 K   
+svchost.exe                   1392 Services                   0      9,476 K   
+svchost.exe                   1424 Services                   0      2,912 K   
+svchost.exe                   1556 Services                   0      7,012 K   
+svchost.exe                   1564 Services                   0     10,800 K   
+svchost.exe                   1576 Services                   0     13,276 K   
+svchost.exe                   1736 Services                   0      3,980 K   
+svchost.exe                   1744 Services                   0     14,664 K   
+svchost.exe                   1788 Services                   0      4,908 K   
+svchost.exe                   1828 Services                   0      4,384 K   
+svchost.exe                   1848 Services                   0      8,060 K   
+svchost.exe                   1924 Services                   0      6,248 K   
+svchost.exe                   1104 Services                   0     10,276 K   
+svchost.exe                   2088 Services                   0     11,724 K   
+svchost.exe                   2100 Services                   0      4,632 K   
+svchost.exe                   2172 Services                   0      4,872 K   
+svchost.exe                   2416 Services                   0     10,396 K   
+svchost.exe                   2448 Services                   0      6,248 K   
+svchost.exe                   2608 Services                   0      5,120 K   
+svchost.exe                   2764 Services                   0      6,740 K   
+svchost.exe                   2812 Services                   0     11,492 K   
+svchost.exe                   2892 Services                   0      8,460 K   
+svchost.exe                   2960 Services                   0      4,888 K   
+svchost.exe                   3000 Services                   0     21,284 K   
+svchost.exe                   2364 Services                   0     13,148 K   
+svchost.exe                   2476 Services                   0      6,044 K   
+NVDisplay.Container.exe       3100 Services                   0     21,844 K   
+svchost.exe                   3224 Services                   0     12,604 K   
+svchost.exe                   3232 Services                   0      5,940 K   
+svchost.exe                   3240 Services                   0      3,472 K   
+svchost.exe                   3248 Services                   0      5,544 K   
+svchost.exe                   3352 Services                   0      4,816 K   
+svchost.exe                   3360 Services                   0      5,532 K   
+svchost.exe                   3368 Services                   0      8,960 K   
+svchost.exe                   3376 Services                   0      5,356 K   
+NVDisplay.Container.exe       3772 Console                    1     35,248 K   
+svchost.exe                   3952 Services                   0      5,392 K   
+WmiPrvSE.exe                  2748 Services                   0     24,256 K   
+svchost.exe                   3340 Services                   0     11,376 K   
+svchost.exe                   3200 Services                   0      5,040 K   
+svchost.exe                   4204 Services                   0     18,264 K   
+svchost.exe                   4216 Services                   0      9,236 K   
+svchost.exe                   4224 Services                   0      7,052 K   
+svchost.exe                   4232 Services                   0      6,240 K   
+svchost.exe                   4384 Services                   0     12,852 K   
+svchost.exe                   4436 Services                   0      7,548 K   
+svchost.exe                   4468 Services                   0     10,180 K   
+spoolsv.exe                   4700 Services                   0      6,188 K   
+svchost.exe                   4852 Services                   0      3,640 K   
+svchost.exe                   4860 Services                   0     12,624 K   
+svchost.exe                   4880 Services                   0     38,900 K   
+svchost.exe                   4892 Services                   0     31,364 K   
+OfficeClickToRun.exe          4904 Services                   0     25,932 K   
+svchost.exe                   5032 Services                   0      5,392 K   
+vmcompute.exe                 5048 Services                   0      8,324 K   
+sqlbrowser.exe                5056 Services                   0      3,780 K   
+SunloginClient.exe            5064 Services                   0      9,952 K   
+QQProtect.exe                 5080 Services                   0     14,060 K   
+svchost.exe                   5088 Services                   0     19,288 K   
+wslservice.exe                5096 Services                   0     15,976 K   
+svchost.exe                   5104 Services                   0      3,152 K   
+svchost.exe                   2664 Services                   0      3,836 K   
+svchost.exe                   4544 Services                   0      6,396 K   
+sqlwriter.exe                 5124 Services                   0      4,336 K   
+dasHost.exe                   5356 Services                   0      2,432 K   
+svchost.exe                   5420 Services                   0      3,136 K   
+svchost.exe                   5664 Services                   0      8,080 K   
+svchost.exe                   5696 Services                   0      9,432 K   
+svchost.exe                   5876 Services                   0      4,456 K   
+wsctrlsvc.exe                 6716 Services                   0      6,372 K   
+svchost.exe                   6896 Services                   0      5,464 K   
+SunloginClient.exe            5992 Services                   0      5,064 K   
+sunlogin_guard.exe            5960 Services                   0     26,480 K   
+conhost.exe                   4144 Services                   0      3,856 K   
+unsecapp.exe                  6604 Services                   0      5,716 K   
+dllhost.exe                   8440 Services                   0      7,420 K   
+sihost.exe                    8580 Console                    1     35,612 K   
+svchost.exe                   8608 Console                    1     28,296 K   
+svchost.exe                   8644 Console                    1     34,020 K   
+MSIAfterburner.exe            8716 Console                    1      8,404 K   
+PopBlock.exe                  8732 Console                    1     11,796 K   
+taskhostw.exe                 8760 Console                    1     15,084 K   
+svchost.exe                   8884 Services                   0      5,468 K   
+svchost.exe                   8896 Services                   0     23,272 K   
+ctfmon.exe                    8964 Console                    1     58,880 K   
+svchost.exe                   9180 Services                   0     14,848 K   
+explorer.exe                  7628 Console                    1    277,140 K   
+svchost.exe                   9404 Services                   0     10,800 K   
+ChsIME.exe                    9720 Console                    1      5,288 K   
+svchost.exe                   9988 Console                    1     34,608 K   
+StartMenuExperienceHost.e     9280 Console                    1     64,232 K   
+RuntimeBroker.exe             9536 Console                    1     20,244 K   
+TrafficMonitor.exe           10352 Console                    1     15,208 K   
+TextInputHost.exe            10948 Console                    1     72,320 K   
+RuntimeBroker.exe            11044 Console                    1     26,540 K   
+ShellExperienceHost.exe       4048 Console                    1     63,552 K   
+RuntimeBroker.exe             8840 Console                    1     29,348 K   
+vmmem                        11780 Services                   0         ��ȱ    
+wlanext.exe                  11848 Services                   0      3,228 K   
+conhost.exe                  11872 Services                   0      3,392 K   
+SecurityHealthSystray.exe    12036 Console                    1      6,528 K   
+SecurityHealthService.exe    12084 Services                   0     11,080 K   
+HipsTray.exe                 12244 Console                    1     12,896 K   
+SunloginClient.exe            9696 Console                    1     19,724 K   
+HuYanBao.exe                 11428 Console                    1     10,944 K   
+ChsIME.exe                    5288 Console                    1     13,280 K   
+gjagent.exe                  12720 Console                    1     40,520 K   
+cmd.exe                       8784 Console                    1      2,616 K   
+conhost.exe                  14132 Console                    1      4,864 K   
+godoc.exe                    14664 Console                    1     10,852 K   
+CompPkgSrv.exe               12712 Console                    1      5,124 K   
+ApplicationFrameHost.exe      5156 Console                    1     35,168 K   
+svchost.exe                  10492 Services                   0      9,564 K   
+UserOOBEBroker.exe            9256 Console                    1      8,076 K   
+SgrmBroker.exe               13544 Services                   0     10,760 K   
+svchost.exe                  12808 Services                   0     20,644 K   
+svchost.exe                  15092 Services                   0     11,240 K   
+svchost.exe                  13292 Console                    1     11,620 K   
+svchost.exe                  17168 Services                   0     14,620 K   
+SDXHelper.exe                17108 Console                    1     12,636 K   
+v2rayN.exe                   10388 Console                    1     51,632 K   
+svchost.exe                   3612 Services                   0     19,820 K   
+svchost.exe                   3832 Services                   0     10,340 K   
+taskhostw.exe                11696 Console                    1     19,608 K   
+dllhost.exe                   9616 Console                    1     13,020 K   
+TIM.exe                       9020 Console                    1    156,012 K   
+TXPlatform.exe                8804 Console                    1      3,012 K   
+QQExternal.exe                9028 Console                    1     39,444 K   
+svchost.exe                   1920 Services                   0      7,072 K   
+WindowsTerminal.exe           7688 Console                    1    124,780 K   
+RuntimeBroker.exe             8380 Console                    1      8,548 K   
+LockApp.exe                  21440 Console                    1     34,260 K   
+RuntimeBroker.exe            20816 Console                    1     20,088 K   
+svchost.exe                   6628 Services                   0      8,084 K   
+Everything.exe               23924 Console                    1     17,972 K   
+Everything.exe               21920 Console                    1    238,224 K   
+dllhost.exe                  23088 Console                    1     13,596 K   
+RuntimeBroker.exe            27312 Console                    1     45,440 K   
+DataExchangeHost.exe         25848 Console                    1     17,552 K   
+dwm.exe                      19636 Console                    1    110,000 K   
+chrome.exe                   20888 Console                    1    254,944 K   
+chrome.exe                   16192 Console                    1      8,248 K   
+chrome.exe                   17888 Console                    1     50,748 K   
+chrome.exe                   13728 Console                    1     15,680 K   
+chrome.exe                    8696 Console                    1     29,808 K   
+chrome.exe                    3288 Console                    1     13,912 K   
+chrome.exe                   14856 Console                    1     32,068 K   
+chrome.exe                   10232 Console                    1     17,608 K   
+chrome.exe                   10216 Console                    1     32,136 K   
+audiodg.exe                   2760 Services                   0     13,732 K   
+chrome.exe                   22548 Console                    1     28,376 K   
+svchost.exe                  28240 Services                   0      7,652 K   
+svchost.exe                  13216 Console                    1     10,692 K   
+MSOfficePLUSService.exe      29360 Services                   0     28,436 K   
+chrome.exe                   12876 Console                    1    305,136 K   
+svchost.exe                   7220 Services                   0      6,180 K   
+chrome.exe                   10308 Console                    1     41,072 K   
+svchost.exe                  31140 Services                   0      7,348 K   
+chrome.exe                   31836 Console                    1     27,000 K   
+chrome.exe                    8860 Console                    1     30,712 K   
+chrome.exe                   23892 Console                    1     48,464 K   
+QQMusic.exe                  14088 Console                    1    142,056 K   
+qmbrowser.exe                30796 Console                    1    123,860 K   
+QMWeiyun.exe                 23732 Console                    1      9,512 K   
+chrome.exe                   29064 Console                    1     34,584 K   
+OneDrive.exe                 24484 Console                    1     96,720 K   
+svchost.exe                  27440 Services                   0     10,096 K   
+chrome.exe                   14848 Console                    1     18,836 K   
+chrome.exe                   17104 Console                    1     25,980 K   
+cmd.exe                      30184 Console                    1      4,288 K   
+conhost.exe                  24672 Console                    1     14,128 K   
+chrome.exe                   25844 Console                    1     70,232 K   
+chrome.exe                   10588 Console                    1    236,784 K   
+cmd.exe                      27272 Console                    1      4,284 K   
+conhost.exe                  32712 Console                    1     14,212 K   
+chrome.exe                   10220 Console                    1     38,944 K   
+Taskmgr.exe                  23148 Console                    1     37,368 K   
+svchost.exe                  33348 Services                   0      8,952 K   
+chrome.exe                   16584 Console                    1     25,988 K   
+xray.exe                     26528 Console                    1     36,352 K   
+conhost.exe                  26396 Console                    1      5,656 K   
+chrome.exe                   23964 Console                    1     28,468 K   
+SearchApp.exe                27884 Console                    1     88,352 K   
+svchost.exe                  20776 Services                   0      5,924 K   
+taskhostw.exe                13276 Console                    1     14,856 K   
+chrome.exe                    6416 Console                    1     21,964 K   
+chrome.exe                   22672 Console                    1     21,728 K   
+chrome.exe                   13184 Console                    1     47,800 K   
+Code.exe                     11628 Console                    1     98,464 K   
+Code.exe                     22600 Console                    1     19,636 K   
+Code.exe                     16048 Console                    1    113,424 K   
+Code.exe                     30256 Console                    1     27,368 K   
+Code.exe                     27980 Console                    1    225,792 K   
+Code.exe                     19340 Console                    1     60,524 K   
+Code.exe                     31236 Console                    1     49,772 K   
+conhost.exe                  13868 Console                    1      7,032 K   
+cmd.exe                       3164 Console                    1      5,236 K   
+conhost.exe                  33052 Console                    1      7,000 K   
+cmd.exe                      26460 Console                    1      5,064 K   
+HipsDaemon.exe                6864 Services                   0     77,944 K   
+usysdiag.exe                 18220 Services                   0      1,384 K   
+chrome.exe                    5968 Console                    1     49,140 K   
+chrome.exe                   21772 Console                    1    180,852 K   
+chrome.exe                   25876 Console                    1     49,588 K   
+svchost.exe                  28788 Services                   0     11,864 K   
+notepad.exe                  30152 Console                    1     19,164 K   
+chrome.exe                   15296 Console                    1     89,868 K   
+chrome.exe                   23888 Console                    1     66,752 K   
+Code.exe                     27924 Console                    1    209,720 K   
+Code.exe                     15200 Console                    1     95,440 K   
+Code.exe                     17112 Console                    1     81,580 K   
+gopls.exe                    17932 Console                    1     89,104 K   
+conhost.exe                  29744 Console                    1      6,592 K   
+conhost.exe                  21376 Console                    1      7,128 K   
+cmd.exe                      30068 Console                    1      5,000 K   
+chrome.exe                   23376 Console                    1    134,156 K   
+chrome.exe                    1200 Console                    1     86,360 K   
+chrome.exe                   17944 Console                    1     87,464 K   
+chrome.exe                   17448 Console                    1     53,872 K   
+chrome.exe                   20612 Console                    1     84,836 K   
+chrome.exe                   24268 Console                    1     78,032 K   
+chrome.exe                   31036 Console                    1    126,268 K   
+chrome.exe                    4628 Console                    1    142,636 K   
+chrome.exe                   10608 Console                    1     69,116 K   
+chrome.exe                    3416 Console                    1     27,244 K   
+Code.exe                     33456 Console                    1    132,660 K   
+Code.exe                     21676 Console                    1     86,188 K   
+gopls.exe                    33156 Console                    1    226,596 K   
+conhost.exe                  18408 Console                    1      6,884 K   
+OpenConsole.exe              26268 Console                    1      9,496 K   
+ssh.exe                      17356 Console                    1      8,964 K   
+OpenConsole.exe              14772 Console                    1      9,516 K   
+ssh.exe                      10400 Console                    1      9,064 K   
+OpenConsole.exe              27580 Console                    1      9,336 K   
+ssh.exe                      20648 Console                    1      8,452 K   
+OpenConsole.exe               5480 Console                    1      9,516 K   
+ssh.exe                      20540 Console                    1      8,988 K   
+msedge.exe                   14024 Console                    1    117,156 K   
+msedge.exe                   28512 Console                    1      9,820 K   
+msedge.exe                    3444 Console                    1     35,576 K    
+msedge.exe                   28944 Console                    1     35,024 K    
+msedge.exe                   15512 Console                    1     19,148 K    
+msedge.exe                   20132 Console                    1     25,092 K    
+msedge.exe                   31136 Console                    1     44,320 K    
+msedge.exe                   19264 Console                    1     70,980 K    
+Wireshark.exe                 9304 Console                    1    412,572 K    
+OpenConsole.exe              21380 Console                    1     10,616 K    
+ssh.exe                      33504 Console                    1      9,964 K    
+svchost.exe                  28872 Services                   0     13,912 K    
+svchost.exe                  30484 Services                   0      8,892 K    
+svchost.exe                   5204 Services                   0      9,320 K    
+svchost.exe                  33436 Services                   0     10,900 K    
+client.exe                    8340 Console                    1     24,932 K    
+smartscreen.exe              33484 Console                    1     26,068 K    
+EasyAntiCheat.exe            33176 Services                   0     27,408 K    
+dllhost.exe                  33592 Console                    1     10,180 K    
+aces.exe                      9808 Console                    1  1,296,956 K    
+GameBarPresenceWriter.exe    11020 Console                    1     19,736 K    
+GameBar.exe                  11216 Console                    1     87,256 K    
+svchost.exe                  16264 Services                   0      9,600 K    
+GameBarFTServer.exe          29604 Console                    1     20,500 K    
+svchost.exe                  32868 Console                    1     39,160 K    
+RuntimeBroker.exe            28104 Console                    1     24,064 K    
+tasklist.exe                  1404 Console                    1     10,384 K    
+
+
+gopsutil  could not get Name: The parameter is incorrect.
+
+retry 0 false
+{"time":"2024-08-12T06:19:31.0231736+08:00","level":"ERROR","msg":"18664: The parameter is incorrect.","trace":{"0":"D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/mapping/network/network_windows.go:229","1":"D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/mapping/network/network_windows.go:163","2":"D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/mapping/network/network_windows.go:126","3":"D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/mapping/network/network_windows.go:53","4":"D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/mapping/network/network.go:57","5":"D:/OneDrive/code/go/anton-planet-accelerator/nodes/client/game/warthunder_windows.go:71","6":"D:/OneDrive/code/go/anton-planet-accelerator/nodes/client/game/game_windows.go:81","7":"D:/OneDrive/code/go/anton-planet-accelerator/nodes/client/client.go:190","8":"D:/OneDrive/code/go/anton-planet-accelerator/nodes/client/client.go:158","9":"D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/errorx/close.go:18","10":"D:/OneDrive/code/go/anton-planet-accelerator/nodes/client/client.go:156","11":"D:/OneDrive/code/go/anton-planet-accelerator/nodes/client/client.go:192"}}
+
+        Error Trace:    D:/OneDrive/code/go/anton-planet-accelerator/nodes/client/cmd/main.go:53     
+                                                C:/Go/src/runtime/proc.go:271
+                                                C:/Go/src/runtime/asm_amd64.s:1695
+        Error:          Received unexpected error:
+                        The parameter is incorrect.
+                        18664
+                        github.com/lysShub/netkit/mapping/network.(*upgrader).modelPath
+                                D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/mapping/network/network_windows.go:229
+                        github.com/lysShub/netkit/mapping/network.(*upgrader).upgradeTCP
+                                D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/mapping/network/network_windows.go:163
+                        github.com/lysShub/netkit/mapping/network.(*upgrader).Upgrade
+                                D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/mapping/network/network_windows.go:126
+                        github.com/lysShub/netkit/mapping/network.(*network).Upgrade
+                                D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/mapping/network/network_windows.go:53
+                        github.com/lysShub/netkit/mapping/network.Process
+                                D:/gopath/pkg/mod/github.com/lys!shub/netkit@v0.0.0-20240811193406-f384269ff585/mapping/network/network.go:57
