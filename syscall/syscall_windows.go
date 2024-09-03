@@ -30,7 +30,7 @@ var (
 	procQueryFullProcessImageNameW = kernel32.NewProc("QueryFullProcessImageNameW")
 	procQueryDosDeviceW            = kernel32.NewProc("QueryDosDeviceW")
 
-	psapi                        = windows.NewLazySystemDLL("psapi.dll")
+	psapi                        = windows.NewLazySystemDLL("psapi.dll") // todo: win7 is Kernel32.dll
 	procGetProcessImageFileNameW = psapi.NewProc("GetProcessImageFileNameW")
 )
 

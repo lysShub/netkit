@@ -18,8 +18,9 @@ import (
 )
 
 const (
-	SystemName     = "system"
-	SystemIdleName = "system-idle"
+	SystemName        = "system"
+	SystemIdleName    = "system-idle"
+	SystemProcessName = "system-proc"
 )
 
 type Elem struct {

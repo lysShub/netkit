@@ -7,7 +7,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/lysShub/netkit/errorx"
 	netcall "github.com/lysShub/netkit/syscall"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/windows"
@@ -166,7 +165,7 @@ func (u *updater) upgradeTCP(n *network) error {
 		n.tcp[i].Raddr = e.RemoteAddr()
 		n.tcp[i].Proto = syscall.IPPROTO_TCP
 		n.tcp[i].Pid = e.OwningPid
-		n.tcp[i].Path, err = u.modelPath(e.OwningPid)
+		n.tcp[i].Path, err = u.processPath(e.OwningPid)
 		if err != nil {
 			return err
 		}
@@ -196,7 +195,7 @@ func (u *updater) upgradeUDP(n *network) error {
 		n.udp[i].Laddr = e.LocalAddr()
 		n.udp[i].Proto = syscall.IPPROTO_UDP
 		n.udp[i].Pid = e.OwningPid
-		n.udp[i].Path, err = u.modelPath(e.OwningPid)
+		n.udp[i].Path, err = u.processPath(e.OwningPid)
 		if err != nil {
 			return err
 		}
@@ -204,7 +203,7 @@ func (u *updater) upgradeUDP(n *network) error {
 	return nil
 }
 
-func (u *updater) modelPath(pid uint32) (path string, err error) {
+func (u *updater) processPath(pid uint32) (path string, err error) {
 	path, has := u.pidpathCache[pid]
 	if has {
 		return path, nil
@@ -216,17 +215,14 @@ func (u *updater) modelPath(pid uint32) (path string, err error) {
 	case 4:
 		return SystemName, nil
 	default:
-		fd, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, pid)
+		fd, err := windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, pid)
 		if err != nil {
-			e := errors.Errorf("OpenProcess(%d): %s", pid, err.Error())
-			switch err {
-			case windows.ERROR_INVALID_PARAMETER, windows.ERROR_ACCESS_DENIED:
-				return "", errorx.WrapTemp(e)
-			default:
-				return "", e
+			if err == windows.ERROR_ACCESS_DENIED {
+				return SystemProcessName, nil
 			}
+			return "", errors.Errorf("OpenProcess(%d): %s", pid, err.Error())
 		}
-		defer windows.Close(fd)
+		defer windows.CloseHandle(fd)
 
 		if n, err := netcall.GetProcessImageFileNameW(fd, u.procPathBuff); err != nil {
 			return "", err
