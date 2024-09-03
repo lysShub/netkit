@@ -219,23 +219,14 @@ func (u *updater) modelPath(pid uint32) (path string, err error) {
 		fd, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, pid)
 		if err != nil {
 			e := errors.Errorf("OpenProcess(%d): %s", pid, err.Error())
-			if err == windows.ERROR_INVALID_PARAMETER {
+			switch err {
+			case windows.ERROR_INVALID_PARAMETER, windows.ERROR_ACCESS_DENIED:
 				return "", errorx.WrapTemp(e)
-			} else {
+			default:
 				return "", e
 			}
 		}
 		defer windows.Close(fd)
-
-		size := uint32(len(u.procPathBuff))
-		if err = netcall.QueryFullProcessImageNameW(
-			fd, 0, u.procPathBuff, &size,
-		); err == nil {
-			path = windows.UTF16ToString(u.procPathBuff)
-			u.pidpathCache[pid] = path
-			return path, nil
-		}
-		// such nvngx_update.exe
 
 		if n, err := netcall.GetProcessImageFileNameW(fd, u.procPathBuff); err != nil {
 			return "", err
