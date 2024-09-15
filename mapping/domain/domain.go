@@ -35,7 +35,7 @@ func NewCache() (*Cache, error) {
 	var c = &Cache{addrs: map[netip.Addr][]string{}}
 	var err error
 
-	c.c, err = newDivertCapture()
+	c.c, err = newCapture()
 	if err != nil {
 		return nil, err
 	}

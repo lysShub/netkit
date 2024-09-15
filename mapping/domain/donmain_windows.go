@@ -10,6 +10,10 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
+func newCapture() (capture, error) {
+	return newDivertCapture()
+}
+
 type divertCapture struct {
 	handle *divert.Handle
 
