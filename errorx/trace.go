@@ -1,13 +1,13 @@
 package errorx
 
 import (
-	"fmt"
 	"log/slog"
 	"runtime"
 	"slices"
 	"strconv"
 	"sync"
 	"unsafe"
+	_ "unsafe"
 
 	"github.com/pkg/errors"
 )
@@ -36,9 +36,14 @@ func (f Frames) LogValue() slog.Value {
 	for {
 		f, more := fs.Next()
 
+		var b = make([]byte, 0, len(f.File)+7)
+		b = append(b, f.File...)
+		b = append(b, ':')
+		b = strconv.AppendInt(b, int64(f.Line), 10)
+
 		attrs = append(attrs, slog.Attr{
 			Key:   strconv.Itoa(len(attrs)),
-			Value: slog.StringValue(fmt.Sprintf("%s:%d", f.File, f.Line)),
+			Value: slog.StringValue(unsafe.String(unsafe.SliceData(b), len(b))),
 		})
 		if !more {
 			break
@@ -47,40 +52,49 @@ func (f Frames) LogValue() slog.Value {
 	return slog.GroupValue(attrs...)
 }
 
-func (f Frames) JsonLiteral(dst []byte) ([]byte, error) {
+//go:linkname appendEscapedJSONString log/slog.appendEscapedJSONString
+func appendEscapedJSONString(buf []byte, s string) []byte
+
+func (f Frames) AppendJSON(b []byte) ([]byte, error) {
 	if len(f) == 0 {
-		return dst, nil
+		b = append(b, '{', '}')
+		return b, nil
 	}
-
-	dst = append(dst, '{')
-
 	fs := runtime.CallersFrames(f)
+
+	b = append(b, '{')
 	for i := 0; ; i++ {
 		f, more := fs.Next()
 
-		dst = append(dst, '"')
-		dst = strconv.AppendInt(dst, int64(i), 10)
-		dst = append(dst, '"', ':', '"')
-		dst = append(dst, f.File...)
-		dst = append(dst, ':')
-		dst = strconv.AppendInt(dst, int64(f.Line), 10)
-		dst = append(dst, '"', ',')
+		b = append(b, '"')
+		b = strconv.AppendInt(b, int64(i), 10)
+		b = append(b, '"', ':', '"')
+		b = appendEscapedJSONString(b, f.File)
+		b = append(b, ':')
+		b = strconv.AppendInt(b, int64(f.Line), 10)
+		b = append(b, '"', ',')
 
 		if !more {
 			break
 		}
 	}
+	b[len(b)-1] = '}'
 
-	dst[len(dst)-1] = '}'
+	return b, nil
+}
 
-	return dst, nil
+func (f Frames) MarshalJSON() ([]byte, error) {
+	return f.AppendJSON(make([]byte, 0, 256))
 }
 
 //go:noinline
 func ConcatTraceAndCallers(err error, callSkip int) Frames {
-	p := getPc()
-	defer putPc(p)
-	pc := unsafe.Slice((*uintptr)(unsafe.Pointer(p)), size)[:0]
+	pcPtr := pcPool.Get().(*[]uintptr)
+	pc := *pcPtr
+	defer func() {
+		*pcPtr = pc[:0]
+		pcPool.Put(pcPtr)
+	}()
 
 	// get err with stack trace, only hit innermost
 	type trace interface{ StackTrace() errors.StackTrace }
@@ -98,7 +112,7 @@ func ConcatTraceAndCallers(err error, callSkip int) Frames {
 	}
 	// remove runtime position, like:
 	//     C:/Go/src/runtime/asm_amd64.s:1695
-	pc = pc[:max(len(pc)-1, 0)]
+	pc = (pc)[:max(len(pc)-1, 0)]
 
 	errorsPc := pc[:len(pc):cap(pc)]
 	callerPc := pc[len(pc):cap(pc)]
@@ -126,19 +140,9 @@ func ConcatTraceAndCallers(err error, callSkip int) Frames {
 	}
 }
 
-const size = 64
-
 var pcPool = sync.Pool{
 	New: func() any {
-		return &([size]uintptr{})
+		var pc = make([]uintptr, 0, 64)
+		return &pc
 	},
-}
-
-func getPc() *[size]uintptr {
-	return pcPool.Get().(*[size]uintptr)
-}
-func putPc(p *[size]uintptr) {
-	if p != nil {
-		pcPool.Put(p)
-	}
 }

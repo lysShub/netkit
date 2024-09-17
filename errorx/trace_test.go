@@ -25,9 +25,9 @@ func Test_Frames(t *testing.T) {
 
 		require.NotContains(t, "trace", b.String())
 
-		lit, err := f.JsonLiteral(nil)
+		lit, err := f.MarshalJSON()
 		require.NoError(t, err)
-		require.Nil(t, lit)
+		require.Equal(t, "{}", string(lit))
 	})
 
 	t.Run("JsonLiteral", func(t *testing.T) {
@@ -35,7 +35,7 @@ func Test_Frames(t *testing.T) {
 
 		var f = errorx.Trace(e).Value.Any().(errorx.Frames)
 
-		lit, err := f.JsonLiteral(nil)
+		lit, err := f.MarshalJSON()
 		require.NoError(t, err)
 
 		// lit = bytes.ReplaceAll(lit, []byte("trace_test.go"), []byte(`trace_"test.go`))
