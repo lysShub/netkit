@@ -4,6 +4,7 @@
 package eth
 
 import (
+	"io"
 	"net"
 	"os"
 	"syscall"
@@ -111,7 +112,7 @@ func (c *ETHConn) ReadFromETH(ip []byte) (n int, from net.HardwareAddr, err erro
 		return 0, nil, errors.Errorf("recved invalid ip packet: %#v", ip[:min(20, len(ip))])
 	}
 	if n > len(ip) {
-		return 0, nil, errorx.ShortBuff(n, len(ip))
+		return 0, nil, errors.WithStack(errorx.WrapTemp(io.ErrShortBuffer))
 	}
 
 	if src, ok := src.(*unix.SockaddrLinklayer); ok {
