@@ -15,7 +15,7 @@ import (
 
 // GetTable get ipv4 route entries
 func GetTable() (table Table, err error) {
-	rows, err := winipcfg.GetIPForwardTable2(windows.AF_INET)
+	rows, err := winipcfg.GetIPForwardTable2(windows.AF_INET) // todo: support ipv6
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
