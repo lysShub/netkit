@@ -3,15 +3,11 @@ package errorx
 type temporaryErr struct{ error }
 
 func Temporary(err error) bool {
-	for {
-		switch x := err.(type) {
-		case interface{ Temporary() bool }:
-			return x.Temporary()
-		case interface{ Unwrap() error }:
-			err = x.Unwrap()
-		default:
-			return false
-		}
+	temp := UnwrapTo[interface{ Temporary() bool }](err)
+	if temp == nil {
+		return false
+	} else {
+		return temp.Temporary()
 	}
 }
 
@@ -28,15 +24,11 @@ func (t *temporaryErr) Temporary() bool { return true }
 type timeoutErr struct{ error }
 
 func Timeout(err error) bool {
-	for {
-		switch x := err.(type) {
-		case interface{ Timeout() bool }:
-			return x.Timeout()
-		case interface{ Unwrap() error }:
-			err = x.Unwrap()
-		default:
-			return false
-		}
+	timeout := UnwrapTo[interface{ Timeout() bool }](err)
+	if timeout == nil {
+		return false
+	} else {
+		return timeout.Timeout()
 	}
 }
 
@@ -49,3 +41,17 @@ func WrapTimeout(err error) error {
 func (t *timeoutErr) Error() string { return t.error.Error() }
 func (t *timeoutErr) Unwrap() error { return t.error }
 func (t *timeoutErr) Timeout() bool { return true }
+
+func UnwrapTo[To any](err error) To {
+	for {
+		switch x := err.(type) {
+		case To:
+			return x
+		case interface{ Unwrap() error }:
+			err = x.Unwrap()
+		default:
+			var to To
+			return to
+		}
+	}
+}
