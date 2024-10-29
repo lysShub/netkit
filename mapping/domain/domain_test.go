@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/netip"
 	"os"
-	"os/exec"
 	"slices"
 	"syscall"
 	"testing"
@@ -100,8 +99,6 @@ func Test_Cache(t *testing.T) {
 }
 
 func TestXxxx(t *testing.T) {
-	exec.Command("ipconfig", "/flushdns")
-
 	var b = make([]byte, 1536)
 
 	divert.MustLoad(divert.DLL)

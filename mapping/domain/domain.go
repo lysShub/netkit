@@ -59,6 +59,7 @@ func newCache() (*cache, error) {
 	}
 
 	go c.service()
+	cleanupDnsCache()
 	return c, nil
 }
 

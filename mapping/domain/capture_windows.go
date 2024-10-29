@@ -4,6 +4,8 @@
 package domain
 
 import (
+	"os/exec"
+
 	"github.com/lysShub/divert-go"
 	"github.com/lysShub/netkit/errorx"
 )
@@ -54,3 +56,7 @@ func (c *divertCapture) Capture(ip []byte) (int, error) {
 }
 
 func (c *divertCapture) Close() error { return c.close(nil) }
+
+func cleanupDnsCache() {
+	exec.Command("ipconfig", "/flushdns").CombinedOutput()
+}
