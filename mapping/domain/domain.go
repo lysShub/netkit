@@ -5,25 +5,26 @@
 package domain
 
 import (
-	"encoding/hex"
-	"log/slog"
 	"net/netip"
 	"sync"
+	"syscall"
+	"time"
 
-	"github.com/lysShub/netkit/debug"
 	"github.com/lysShub/netkit/errorx"
-	"github.com/lysShub/netkit/packet"
+	"github.com/lysShub/netkit/mapping"
 	"github.com/miekg/dns"
 	"github.com/pkg/errors"
+	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
-type capture interface {
-	Capture(b *packet.Packet) error
-	Close() error
-}
+var (
+	once   sync.Once
+	global *cache
+)
 
-type Cache struct {
-	c capture
+type cache struct {
+	capture   Capture
+	assembler *TcpAssembler
 
 	mu    sync.RWMutex
 	addrs map[netip.Addr][]string
@@ -31,110 +32,145 @@ type Cache struct {
 	closeErr errorx.CloseErr
 }
 
-func NewCache() (*Cache, error) {
-	var c = &Cache{addrs: map[netip.Addr][]string{}}
-	var err error
+func New() (cache *cache, err error) {
+	once.Do(func() {
+		global, err = newCache()
+	})
+	if err != nil {
+		once = sync.Once{}
+		return nil, err
+	} else if global.closeErr.Closed() {
+		once = sync.Once{}
+		return nil, global.closeErr.Close(nil)
+	}
+	return global, nil
+}
 
-	c.c, err = newCapture()
+func newCache() (*cache, error) {
+	var c = &cache{
+		assembler: NewTcpAssembler(),
+		addrs:     map[netip.Addr][]string{},
+	}
+
+	var err error
+	c.capture, err = newCapture()
 	if err != nil {
 		return nil, err
 	}
 
-	go c.captureService()
+	go c.service()
 	return c, nil
 }
 
-func (c *Cache) put(pkt *packet.Packet) error {
-	return c.putRaw(pkt.Bytes())
+func (c *cache) service() (_ error) {
+	var ip = make([]byte, 1536)
+	for {
+		n, err := c.capture.Capture(ip[:cap(ip)])
+		if err != nil {
+			return c.close(err)
+		} else {
+			ip = ip[:n]
+		}
+
+		hdr := header.IPv4(ip)
+		switch proto := hdr.Protocol(); proto {
+		case syscall.IPPROTO_UDP:
+			i := hdr.HeaderLength() + header.UDPMinimumSize
+			if err := c.put(ip[i:]); err != nil {
+				return c.close(err)
+			}
+		case syscall.IPPROTO_TCP:
+			data, err := c.assembler.Put(ip, time.Now())
+			if err != nil {
+				return c.close(err)
+			} else if len(data) > 0 {
+				for _, msg := range RawDnsOverTcp(data).Msgs() {
+					if err := c.put(msg); err != nil {
+						return c.close(err)
+					}
+				}
+			}
+		default:
+			return c.close(errors.Errorf("unknown protocol %d", proto))
+		}
+	}
 }
 
-func (c *Cache) putRaw(b []byte) error {
+func (c *cache) put(msg []byte) error {
 	var m dns.Msg
-	if err := m.Unpack(b); err != nil {
+	if err := m.Unpack(msg); err != nil {
 		return errors.WithStack(err)
 	}
 
-	var addr netip.Addr
 	var cname = map[string]string{}
 	for _, e := range m.Answer {
 		switch e := e.(type) {
 		case *dns.A:
-			addr = netip.AddrFrom4([4]byte(e.A.To4()))
+			names := []string{unFqdn(e.Hdr.Name)}
+			for n := cname[names[0]]; len(n) > 0; {
+				names = append(names, n)
+				n = cname[n]
+			}
+			addr := netip.AddrFrom4([4]byte(e.A.To4()))
+
+			c.mu.Lock()
+			c.addrs[addr] = names
+			c.mu.Unlock()
 		case *dns.AAAA:
-			addr = netip.AddrFrom16([16]byte(e.AAAA.To16()))
+			names := []string{unFqdn(e.Hdr.Name)}
+			for n := cname[names[0]]; len(n) > 0; {
+				names = append(names, n)
+				n = cname[n]
+			}
+			addr := netip.AddrFrom16([16]byte(e.AAAA.To16()))
+
+			c.mu.Lock()
+			c.addrs[addr] = names
+			c.mu.Unlock()
 		case *dns.CNAME:
-			cname[e.Target] = e.Hdr.Name
-			continue
+			cname[unFqdn(e.Target)] = unFqdn(e.Hdr.Name)
 		default:
 			continue
 		}
-
-		ns := []string{trim(e.Header().Name)}
-		for t := e.Header().Name; ; {
-			if n, has := cname[t]; has {
-				ns = append(ns, trim(n))
-				t = n
-			} else {
-				break
-			}
-		}
-		if debug.Debug() && len(ns) != len(cname)+1 {
-			println("exception dns packet: ", hex.EncodeToString(b))
-		}
-
-		c.mu.Lock()
-		c.addrs[addr] = ns
-		c.mu.Unlock()
 	}
 	return nil
 }
 
-func trim(s string) string {
-	i := len(s) - 1
-	if i < 0 {
-		return s
-	} else if s[i] == '.' {
-		return s[:i]
+// unFqdn ref [dns.Fqdn]
+func unFqdn(s string) string {
+	if n := len(s); n > 1 && s[n-1] == '.' {
+		return s[:n-1]
 	} else {
 		return s
 	}
 }
 
-func (c *Cache) RDNS(a netip.Addr) (names []string) {
+func (c *cache) RDNS(a netip.Addr) (names []string) {
 	c.mu.RLock()
 	names = c.addrs[a]
 	c.mu.RUnlock()
 	return names
 }
 
-func (c *Cache) close(cause error) error {
+func (c *cache) close(cause error) error {
 	return c.closeErr.Close(func() (errs []error) {
-		if debug.Debug() && cause != nil {
-			slog.Warn(cause.Error(), errorx.Trace(cause)) // todo: add log opt
-		}
 		errs = append(errs, cause)
-		if c.c != nil {
-			errs = append(errs, c.c.Close())
+		if c.capture != nil {
+			errs = append(errs, c.capture.Close())
 		}
 		return errs
 	})
 }
-func (c *Cache) Close() error { return c.close(nil) }
-func (c *Cache) Closed() bool { return c.closeErr.Closed() }
+func (c *cache) Close() error { return c.close(nil) }
 
-func (c *Cache) captureService() (_ error) {
-	var b = packet.Make(0, 2048)
-
-	for {
-		err := c.c.Capture(b.Sets(0, 0xffff))
-		if err != nil {
-			return c.close(err)
-		}
-
-		if err := c.put(b); err != nil {
-			if debug.Debug() {
-				slog.Warn(err.Error(), errorx.Trace(err))
-			}
-		}
+func RDNS(addr netip.Addr) (names []string, err error) {
+	cache, err := New()
+	if err != nil {
+		return nil, err
 	}
+	names = cache.RDNS(addr)
+	if len(names) == 0 {
+		return nil, mapping.ErrNotRecord{}
+	}
+	return names, nil
 }

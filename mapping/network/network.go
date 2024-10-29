@@ -69,7 +69,7 @@ func Process(laddr netip.AddrPort, proto uint8) (e Elem, err error) {
 		return Elem{}, err
 	}
 	if e == (Elem{}) {
-		return Elem{}, errors.WithStack(mapping.ErrNotRecord{})
+		return Elem{}, mapping.ErrNotRecord{}
 	}
 	return e, nil
 }

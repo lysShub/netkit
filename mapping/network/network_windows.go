@@ -27,6 +27,7 @@ func New() (n *network, err error) {
 		global, err = newNetwork()
 	})
 	if err != nil {
+		once = sync.Once{}
 		return nil, err
 	}
 	return global, nil

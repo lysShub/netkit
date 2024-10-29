@@ -6,11 +6,9 @@ package domain
 import (
 	"github.com/lysShub/divert-go"
 	"github.com/lysShub/netkit/errorx"
-	"github.com/lysShub/netkit/packet"
-	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
-func newCapture() (capture, error) {
+func newCapture() (Capture, error) {
 	return newDivertCapture()
 }
 
@@ -20,7 +18,7 @@ type divertCapture struct {
 	closeErr errorx.CloseErr
 }
 
-func newDivertCapture() (capture, error) {
+func newDivertCapture() (Capture, error) {
 	if err := divert.Load(divert.DLL); err != nil && !errorx.Temporary(err) {
 		return nil, err
 	}
@@ -28,7 +26,7 @@ func newDivertCapture() (capture, error) {
 	var g = &divertCapture{}
 	var err error
 
-	var filter = "inbound and ip and udp and remotePort=53"
+	var filter = "inbound and ip and remotePort=53"
 	g.handle, err = divert.Open(filter, divert.Network, 0, divert.Sniff|divert.ReadOnly)
 	if err != nil {
 		return nil, g.close(err)
@@ -46,18 +44,13 @@ func (c *divertCapture) close(cause error) error {
 	})
 }
 
-func (c *divertCapture) Capture(b *packet.Packet) error {
-	n, err := c.handle.Recv(b.Bytes(), nil)
+func (c *divertCapture) Capture(ip []byte) (int, error) {
+	n, err := c.handle.Recv(ip, nil)
 	if err != nil {
-		return err
-	} else if n == 0 {
-		return c.Capture(b)
+		return 0, err
+	} else {
+		return n, err
 	}
-	b.SetData(n)
-
-	ip := header.IPv4(b.Bytes())
-	b.DetachN(int(ip.HeaderLength()) + header.UDPMinimumSize)
-	return nil
 }
 
 func (c *divertCapture) Close() error { return c.close(nil) }

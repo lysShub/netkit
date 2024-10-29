@@ -1,83 +1,130 @@
+//go:build windows
+// +build windows
+
 package domain
 
 import (
-	"context"
 	"fmt"
 	"net/netip"
 	"os"
+	"os/exec"
 	"slices"
 	"syscall"
 	"testing"
 
 	"github.com/google/gopacket/pcapgo"
-	"github.com/miekg/dns"
+	"github.com/lysShub/divert-go"
+	"github.com/lysShub/netkit/errorx"
 	"github.com/stretchr/testify/require"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
-var dnsResps = func(t require.TestingT) (resps [][]byte) {
-	fh, err := os.Open("test.pcap")
+var dnsMsgs = func(t require.TestingT) (msgs [][]byte) {
+	fh, err := os.Open("test.pcap") // todo: 这个数据集不完美、没有一次tcp查询多个记录的
 	require.NoError(t, err)
 	defer fh.Close()
 
 	r, err := pcapgo.NewReader(fh)
 	require.NoError(t, err)
 
+	a := NewTcpAssembler()
 	for {
-		data, _, err := r.ReadPacketData()
+		data, info, err := r.ReadPacketData()
 		if err != nil && err.Error() == "EOF" {
 			break
 		}
 		require.NoError(t, err)
 
 		ip := header.IPv4(data[14:])
-		if ip.Protocol() == syscall.IPPROTO_UDP {
+		switch ip.Protocol() {
+		case syscall.IPPROTO_UDP:
 			udp := header.UDP(ip.Payload())
-			resps = append(resps, slices.Clone(udp.Payload()))
+			msgs = append(msgs, slices.Clone(udp.Payload()))
+		case syscall.IPPROTO_TCP:
+			data, err := a.Put(ip, info.Timestamp)
+			require.NoError(t, err)
+
+			if len(data) > 0 {
+				for _, msg := range RawDnsOverTcp(data).Msgs() {
+					msgs = append(msgs, slices.Clone(msg))
+				}
+			}
+		case 1:
+		default:
+			t.Errorf("invalid protocol %d", ip.Protocol())
+			t.FailNow()
 		}
 	}
-	return resps
+	return msgs
 }
 
 func Test_Cache(t *testing.T) {
-	c, err := NewCache()
+	c, err := New()
 	require.NoError(t, err)
 	defer c.Close()
-
-	for _, e := range dnsResps(t) {
-		c.putRaw(e)
+	for _, e := range dnsMsgs(t) {
+		require.NoError(t, c.put(e))
 	}
 
-	t.Run("cname", func(t *testing.T) {
-		names := c.RDNS(netip.MustParseAddr("52.109.52.131"))
-		require.Equal(t, []string{
-			"jpe-azsc-config.officeapps.live.com",
-			"asia.configsvc1.live.com.akadns.net",
-			"prod.configsvc1.live.com.akadns.net",
-			"config.officeapps.live.com",
-			"officeclient.microsoft.com",
-		}, names)
-	})
-
-	t.Run("normal", func(t *testing.T) {
-		var addrs = make([]netip.Addr, 0)
-		{
-			var m dns.Msg
-			m.SetQuestion(dns.Fqdn("live.bilibili.com"), dns.TypeA)
-			r, err := dns.ExchangeContext(context.Background(), &m, "114.114.114.114:53")
-			require.NoError(t, err)
-			for _, e := range r.Answer {
-				if e, ok := (e).(*dns.A); ok {
-					addrs = append(addrs, netip.AddrFrom4([4]byte(e.A.To4())))
-				}
-			}
-		}
-
-		for _, e := range addrs {
-			str := e.String()
-			fmt.Println(str)
-			names := c.RDNS(e)
-			require.Contains(t, names, "live.bilibili.com")
+	t.Run("udp-cname", func(t *testing.T) {
+		for _, addr := range []netip.Addr{
+			netip.MustParseAddr("40.126.35.19"),
+			netip.MustParseAddr("40.126.35.145"),
+			netip.MustParseAddr("20.190.163.19"),
+		} {
+			names := c.RDNS(addr)
+			require.Equal(t, []string{
+				"www.tm.v4.a.prd.aadg.trafficmanager.net",
+				"prdv4a.aadg.msidentity.com",
+				"www.tm.lg.prod.aadmsa.trafficmanager.net",
+				"login.msa.msidentity.com",
+				"login.live.com",
+			}, names)
 		}
 	})
+
+	t.Run("tcp-cname", func(t *testing.T) {
+		for _, addr := range []netip.Addr{
+			netip.MustParseAddr("118.180.40.35"),
+			netip.MustParseAddr("125.74.1.35"),
+		} {
+			names := c.RDNS(addr)
+			require.Equal(t, []string{
+				"opencdnbilibiliv6.jomodns.com",
+				"i0.hdslb.com.a.bdydns.com",
+				"i0.hdslb.com",
+			}, names)
+		}
+	})
+
+}
+
+func TestXxxx(t *testing.T) {
+	exec.Command("ipconfig", "/flushdns")
+
+	var b = make([]byte, 1536)
+
+	divert.MustLoad(divert.DLL)
+	d, err := divert.Open("outbound and !loopback and ip and tcp", divert.Network, 0, divert.ReadOnly|divert.Sniff)
+	require.NoError(t, err)
+
+	var dup = map[netip.Addr]bool{}
+	for {
+		n, err := d.Recv(b[:cap(b)], nil)
+		require.NoError(t, err)
+
+		dst := netip.AddrFrom4(header.IPv4(b[:n]).DestinationAddress().As4())
+		var has, ok bool
+		if ok, has = dup[dst]; ok {
+			continue
+		}
+
+		names, err := RDNS(dst)
+		require.True(t, err == nil || errorx.Temporary(err), err)
+
+		dup[dst] = len(names) > 0
+		if !has {
+			fmt.Println(dst.String(), names)
+		}
+	}
 }
