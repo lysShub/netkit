@@ -32,6 +32,10 @@ func Timeout(err error) bool {
 	}
 }
 
+func ConnectRefused(err error) bool {
+	return connectRefused(err)
+}
+
 func WrapTimeout(err error) error {
 	if err == nil {
 		return nil
