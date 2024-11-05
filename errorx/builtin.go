@@ -36,6 +36,10 @@ func ConnectRefused(err error) bool {
 	return connectRefused(err)
 }
 
+func NetUnreach(err error) bool {
+	return netUnreach(err)
+}
+
 func WrapTimeout(err error) error {
 	if err == nil {
 		return nil

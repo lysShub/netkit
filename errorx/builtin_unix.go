@@ -12,3 +12,7 @@ import (
 func connectRefused(err error) bool {
 	return errors.Is(err, unix.ECONNREFUSED)
 }
+
+func netUnreach(err error) bool {
+	return errors.Is(err, unix.ENETUNREACH)
+}
