@@ -13,7 +13,7 @@ func (t Table) Match(dst netip.Addr) Entry {
 
 func (t Table) match(dst netip.Addr) Entry {
 	for i := len(t) - 1; i >= 0; i-- {
-		if t[i].Dest.Contains(dst) {
+		if t[i].Addr.IsValid() && t[i].Dest.Contains(dst) {
 			return t[i]
 		}
 	}
