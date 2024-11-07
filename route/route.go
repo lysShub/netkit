@@ -2,6 +2,7 @@ package route
 
 import (
 	"net/netip"
+	"slices"
 )
 
 type Table []Entry
@@ -12,32 +13,52 @@ func (t Table) MatchFunc(dst netip.Addr, fn func(Entry) (hit bool)) Entry {
 
 // Match match best route entry
 func (t Table) Match(dst netip.Addr) Entry {
-	return t.match(dst)
-}
-
-func (t Table) match(dst netip.Addr) Entry {
-	for i := len(t) - 1; i >= 0; i-- {
-		if t[i].Addr.IsValid() && t[i].Dest.Contains(dst) {
-			return t[i]
-		}
-	}
-	return Entry{}
+	return t.matchFunc(dst, nil)
 }
 
 func (t Table) matchFunc(dst netip.Addr, fn func(Entry) (hit bool)) Entry {
+	type info struct {
+		i         int
+		prefixLen uint8
+		metrics   uint32
+	}
+	var infos []info
 	for i := len(t) - 1; i >= 0; i-- {
 		if t[i].Addr.IsValid() && t[i].Dest.Contains(dst) {
-			if fn(t[i]) {
-				return t[i]
+			if fn == nil || fn(t[i]) {
+				infos = append(infos, info{
+					i:         i,
+					prefixLen: uint8(t[i].Dest.Bits()),
+					metrics:   t[i].Metric,
+				})
 			}
 		}
 	}
-	return Entry{}
+	if len(infos) == 0 {
+		return Entry{}
+	}
+
+	slices.SortFunc(infos, func(a, b info) int {
+		if a.prefixLen < b.prefixLen {
+			return -1
+		} else if a.prefixLen > b.prefixLen {
+			return 1
+		} else {
+			if a.metrics < b.metrics {
+				return 1
+			} else if a.metrics > b.metrics {
+				return -1
+			} else {
+				return 0
+			}
+		}
+	})
+	return t[infos[len(infos)-1].i]
 }
 
 // Loopback detect addr is loopback
 func (t Table) Loopback(addr netip.Addr) bool {
-	e := t.match(addr)
+	e := t.matchFunc(addr, nil)
 	return e.Valid() && e.Addr == addr && e.Dest.IsSingleIP()
 }
 
