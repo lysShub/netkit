@@ -6,6 +6,10 @@ import (
 
 type Table []Entry
 
+func (t Table) MatchFunc(dst netip.Addr, fn func(Entry) (hit bool)) Entry {
+	return t.matchFunc(dst, fn)
+}
+
 // Match match best route entry
 func (t Table) Match(dst netip.Addr) Entry {
 	return t.match(dst)
@@ -15,6 +19,17 @@ func (t Table) match(dst netip.Addr) Entry {
 	for i := len(t) - 1; i >= 0; i-- {
 		if t[i].Addr.IsValid() && t[i].Dest.Contains(dst) {
 			return t[i]
+		}
+	}
+	return Entry{}
+}
+
+func (t Table) matchFunc(dst netip.Addr, fn func(Entry) (hit bool)) Entry {
+	for i := len(t) - 1; i >= 0; i-- {
+		if t[i].Addr.IsValid() && t[i].Dest.Contains(dst) {
+			if fn(t[i]) {
+				return t[i]
+			}
 		}
 	}
 	return Entry{}
