@@ -216,12 +216,19 @@ func (u *updater) processPath(pid uint32) (path string, err error) {
 	case 4:
 		return SystemName, nil
 	default:
-		fd, err := windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, pid)
+		fd, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, pid)
 		if err != nil {
 			if err == windows.ERROR_ACCESS_DENIED {
 				return SystemProcessName, nil
+			} else if err == windows.ERROR_INVALID_PARAMETER {
+				// todo: add log
+				fd, err = windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, pid)
+				if err != nil {
+					return "", errors.Errorf("OpenProcess(%d): %s", pid, err.Error())
+				}
+			} else {
+				return "", errors.Errorf("OpenProcess(%d): %s", pid, err.Error())
 			}
-			return "", errors.Errorf("OpenProcess(%d): %s", pid, err.Error())
 		}
 		defer windows.CloseHandle(fd)
 
