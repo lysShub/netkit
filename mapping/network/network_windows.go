@@ -224,6 +224,9 @@ func (u *updater) processPath(pid uint32) (path string, err error) {
 				// todo: add log
 				fd, err = windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, pid)
 				if err != nil {
+					if err == windows.ERROR_ACCESS_DENIED {
+						return SystemProcessName, nil
+					}
 					return "", errors.Errorf("OpenProcess(%d): %s", pid, err.Error())
 				}
 			} else {
