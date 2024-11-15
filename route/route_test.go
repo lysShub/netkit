@@ -26,17 +26,17 @@ func Test_Match(t *testing.T) {
 	table := route.Table{
 		{
 			Dest:      netip.PrefixFrom(netip.IPv4Unspecified(), 0),
-			Next:      netip.MustParseAddr("192.168.42.129"),
-			Interface: 4,
-			Addr:      netip.MustParseAddr("192.168.42.158"),
-			Metric:    75,
-		},
-		{
-			Dest:      netip.PrefixFrom(netip.IPv4Unspecified(), 0),
 			Next:      netip.MustParseAddr("26.0.0.1"),
 			Interface: 19,
 			Addr:      netip.MustParseAddr("26.202.212.143"),
 			Metric:    9257,
+		},
+		{
+			Dest:      netip.PrefixFrom(netip.IPv4Unspecified(), 0),
+			Next:      netip.MustParseAddr("192.168.42.129"),
+			Interface: 4,
+			Addr:      netip.MustParseAddr("192.168.42.158"),
+			Metric:    75,
 		},
 		{
 			Dest:      netip.PrefixFrom(netip.IPv4Unspecified(), 0),
@@ -53,6 +53,7 @@ func Test_Match(t *testing.T) {
 			Metric:    271,
 		},
 	}
+	table.Sort()
 
 	e := table.Match(netip.MustParseAddr("1.1.1.1"))
 	require.Equal(t, 4, int(e.Interface))

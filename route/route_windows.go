@@ -38,7 +38,7 @@ func GetTable() (table Table, err error) {
 			}
 			ifs[e.InterfaceIndex] = i
 		}
-		// https://learn.microsoft.com/en-us/windows/win32/api/netioapi/ns-netioapi-mib_ipforward_row2
+		// https://learn.microsoft.com/zh-cn/windows/win32/api/netioapi/ns-netioapi-mib_ipforward_row2
 		e.Metric += i.Metric
 
 		table = append(table, Entry{
