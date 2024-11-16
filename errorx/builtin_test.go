@@ -37,3 +37,9 @@ func Test_ConnectRefused(t *testing.T) {
 	require.Error(t, err)
 	require.True(t, ConnectRefused(err))
 }
+
+func Test_Builtin(t *testing.T) {
+	require.True(t, ConnectRefused(ErrConnectRefused))
+	require.True(t, NetworkUnreach(ErrNetworkUnreach))
+	require.True(t, BuffTooSmall(ErrBuffTooSmall))
+}

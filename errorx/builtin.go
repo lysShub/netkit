@@ -31,15 +31,6 @@ func Timeout(err error) bool {
 		return timeout.Timeout()
 	}
 }
-
-func ConnectRefused(err error) bool {
-	return connectRefused(err)
-}
-
-func NetUnreach(err error) bool {
-	return netUnreach(err)
-}
-
 func WrapTimeout(err error) error {
 	if err == nil {
 		return nil
@@ -63,3 +54,16 @@ func UnwrapTo[To any](err error) To {
 		}
 	}
 }
+
+func NotFound(err error) bool {
+	timeout := UnwrapTo[interface{ Timeout() bool }](err)
+	if timeout == nil {
+		return false
+	} else {
+		return timeout.Timeout()
+	}
+}
+
+func ConnectRefused(err error) bool { return connectRefused(err) }
+func NetworkUnreach(err error) bool { return networkUnreach(err) }
+func BuffTooSmall(err error) bool   { return buffTooSmall(err) }

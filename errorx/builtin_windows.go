@@ -9,12 +9,23 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+var ErrConnectRefused = windows.WSAECONNREFUSED
+
 func connectRefused(err error) bool {
 	return errors.Is(err, windows.WSAECONNREFUSED) ||
 		errors.Is(err, windows.ERROR_CONNECTION_REFUSED)
 }
 
-func netUnreach(err error) bool {
+var ErrNetworkUnreach = windows.WSAENETUNREACH
+
+func networkUnreach(err error) bool {
 	return errors.Is(err, windows.WSAENETUNREACH) ||
 		errors.Is(err, windows.ERROR_NETWORK_UNREACHABLE)
+}
+
+var ErrBuffTooSmall = windows.ERROR_INSUFFICIENT_BUFFER
+
+func buffTooSmall(err error) bool {
+	return errors.Is(err, windows.ERROR_INSUFFICIENT_BUFFER) ||
+		errors.Is(err, windows.ERROR_DS_USER_BUFFER_TO_SMALL)
 }
