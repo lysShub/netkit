@@ -1,7 +1,9 @@
 package route_test
 
 import (
+	"bytes"
 	"fmt"
+	"log/slog"
 	"net/netip"
 	"strconv"
 	"strings"
@@ -9,6 +11,7 @@ import (
 
 	"github.com/lysShub/netkit/route"
 	"github.com/stretchr/testify/require"
+	"github.com/tidwall/gjson"
 )
 
 func TestXxxx(t *testing.T) {
@@ -107,6 +110,47 @@ func Test_Loopback(t *testing.T) {
 	t.Run("5", func(t *testing.T) {
 		lo := tb.Loopback(netip.MustParseAddr("127.0.0.1"))
 		require.True(t, lo)
+	})
+}
+
+func Test_Slog(t *testing.T) {
+	table := route.Table{
+		{
+			Dest:      netip.PrefixFrom(netip.IPv4Unspecified(), 0),
+			Next:      netip.MustParseAddr("26.0.0.1"),
+			Interface: 19,
+			Addr:      netip.MustParseAddr("26.202.212.143"),
+			Metric:    9257,
+		},
+		{
+			Dest:      netip.PrefixFrom(netip.IPv4Unspecified(), 0),
+			Next:      netip.Addr{},
+			Interface: 4,
+			Addr:      netip.MustParseAddr("192.168.42.158"),
+			Metric:    75,
+		},
+	}
+
+	t.Run("entry", func(t *testing.T) {
+		var b = &bytes.Buffer{}
+		slog.SetDefault(slog.New(slog.NewJSONHandler(b, nil)))
+
+		slog.Info("entry", slog.Any("v", table[0]))
+		v := gjson.Get(b.String(), "v")
+
+		exp := `{"dest":"0.0.0.0/0","next":"26.0.0.1","ifi":19,"addr":"26.202.212.143","metric":9257}`
+		require.Equal(t, exp, v.Raw)
+	})
+
+	t.Run("table", func(t *testing.T) {
+		var b = &bytes.Buffer{}
+		slog.SetDefault(slog.New(slog.NewJSONHandler(b, nil)))
+
+		slog.Info("table", slog.Any("v", table))
+		v := gjson.Get(b.String(), "v")
+
+		exp := `[{"dest":"0.0.0.0/0","next":"26.0.0.1","ifi":19,"addr":"26.202.212.143","metric":9257},{"dest":"0.0.0.0/0","next":"","ifi":4,"addr":"192.168.42.158","metric":75}]`
+		require.Equal(t, exp, v.Raw)
 	})
 }
 

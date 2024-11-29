@@ -9,17 +9,17 @@ import (
 
 type Entry struct {
 	// dest subnet
-	Dest netip.Prefix
+	Dest netip.Prefix `json:"dest"`
 
 	// nextHop addr, as gateway
-	Next netip.Addr
+	Next netip.Addr `json:"next"`
 
 	// src interface index and correspond address, actually one
 	// interface can with multiple addresses, just select one.
-	Interface uint32
-	Addr      netip.Addr // todo: Addrs
+	Interface uint32     `json:"ifi"`
+	Addr      netip.Addr `json:"addr"` // todo: Addrs
 
-	Metric uint32
+	Metric uint32 `json:"metric"`
 
 	raw EntryRaw
 }
