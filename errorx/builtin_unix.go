@@ -26,3 +26,9 @@ var ErrBuffTooSmall = unix.ENOBUFS
 func buffTooSmall(err error) bool {
 	return errors.Is(err, unix.ENOBUFS)
 }
+
+var ErrAddrNotAvail = unix.EADDRNOTAVAIL
+
+func addrNotAvail(err error) bool {
+	return errors.Is(err, unix.EADDRNOTAVAIL)
+}

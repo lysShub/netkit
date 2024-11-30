@@ -29,3 +29,9 @@ func buffTooSmall(err error) bool {
 	return errors.Is(err, windows.ERROR_INSUFFICIENT_BUFFER) ||
 		errors.Is(err, windows.ERROR_DS_USER_BUFFER_TO_SMALL)
 }
+
+var ErrAddrNotAvail = windows.WSAEADDRNOTAVAIL
+
+func addrNotAvail(err error) bool {
+	return errors.Is(err, windows.WSAEADDRNOTAVAIL)
+}
