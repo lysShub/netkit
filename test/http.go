@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// Post construct http post request
 func Post[T any](t *testing.T, data T) (req *http.Request) {
 	var ch = make(chan struct{})
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -58,40 +60,35 @@ func Post[T any](t *testing.T, data T) (req *http.Request) {
 	return req
 }
 
-func Gin[T any](t *testing.T, data T) (req *gin.Context) {
-	var ch = make(chan struct{})
-	g := gin.Default()
-	g.POST("/", func(ctx *gin.Context) {
-		select {
-		case <-ch:
-		default:
-			req = ctx.Copy()
-			close(ch)
-		}
-	})
+type Response[T any] struct {
+	*httptest.ResponseRecorder
+}
 
-	var lis, err = net.Listen("tcp4", ":")
+func NewResp[T any]() *Response[T] {
+	return &Response[T]{
+		ResponseRecorder: &httptest.ResponseRecorder{
+			Body: bytes.NewBuffer(nil),
+		},
+	}
+}
+
+func (r *Response[T]) Unmarshl(t *testing.T) T {
+	var val T
+	err := json.NewDecoder(r.Body).Decode(&val)
 	require.NoError(t, err)
-	defer lis.Close()
+	return val
+}
 
-	eg, _ := errgroup.WithContext(context.Background())
-	eg.Go(func() error {
-		require.NoError(t, g.RunListener(lis))
-		return nil
-	})
-	eg.Go(func() error {
-		time.Sleep(time.Second)
-		var b = bytes.NewBuffer(nil)
-		require.NoError(t, json.NewEncoder(b).Encode(data))
-		url := fmt.Sprintf("http://%s", lis.Addr())
-		resp, err := http.Post(url, "application/json", b)
-		require.NoError(t, err)
-		require.Equal(t, http.StatusOK, resp.StatusCode)
-		return nil
-	})
-	<-ch
-	require.NoError(t, lis.Close())
-	require.NoError(t, eg.Wait())
+// Gin construct gin context
+// Example:
+//
+//	ctx,resp := Gin[RegistReq,RegistResp](t, RegistReq{Name:"Tom"})
+//	ctr.Regist(ctx)
+//	require.Equal(t, http.StatusOK, resp.Code) // or other check
+func Gin[Req, Resp any](t *testing.T, data Req) (*gin.Context, *Response[Resp]) {
+	w := NewResp[Resp]()
 
-	return req
+	ctx := gin.CreateTestContextOnly(w, gin.Default())
+	ctx.Request = Post(t, data)
+	return ctx, w
 }
