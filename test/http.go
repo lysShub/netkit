@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -40,7 +41,10 @@ func Post[T any](t *testing.T, data T) (req *http.Request) {
 
 	eg, _ := errgroup.WithContext(context.Background())
 	eg.Go(func() error {
-		require.NoError(t, http.Serve(lis, http.DefaultServeMux))
+		err := http.Serve(lis, http.DefaultServeMux)
+		if !errors.Is(err, net.ErrClosed) {
+			require.NoError(t, err)
+		}
 		return nil
 	})
 	eg.Go(func() error {
@@ -78,8 +82,7 @@ func (r *Response[T]) Unmarshal() (T, error) {
 	return val, err
 }
 
-// Gin construct gin context
-// Example:
+// Gin construct gin context, Example:
 //
 //	ctx,resp := Gin[RegistReq,RegistResp](t, RegistReq{Name:"Tom"})
 //	ctr.Regist(ctx)
