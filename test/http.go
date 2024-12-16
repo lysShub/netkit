@@ -21,7 +21,8 @@ import (
 // Post construct http post request
 func Post[T any](t *testing.T, data T) (req *http.Request) {
 	var ch = make(chan struct{})
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		select {
 		case <-ch:
 		default:
@@ -41,7 +42,7 @@ func Post[T any](t *testing.T, data T) (req *http.Request) {
 
 	eg, _ := errgroup.WithContext(context.Background())
 	eg.Go(func() error {
-		err := http.Serve(lis, http.DefaultServeMux)
+		err := http.Serve(lis, mux)
 		if !errors.Is(err, net.ErrClosed) {
 			require.NoError(t, err)
 		}
