@@ -72,11 +72,10 @@ func NewResp[T any]() *Response[T] {
 	}
 }
 
-func (r *Response[T]) Unmarshl(t *testing.T) T {
+func (r *Response[T]) Unmarshal() (T, error) {
 	var val T
 	err := json.NewDecoder(r.Body).Decode(&val)
-	require.NoError(t, err)
-	return val
+	return val, err
 }
 
 // Gin construct gin context
