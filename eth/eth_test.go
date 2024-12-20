@@ -13,7 +13,7 @@ import (
 )
 
 func Baidu() netip.Addr {
-	ips, err := net.LookupIP("baidu.com")
+	ips, err := net.LookupIP("www.baidu.com")
 	if err != nil {
 		panic(err)
 	}
