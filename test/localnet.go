@@ -45,8 +45,9 @@ func LocIP() netip.Addr {
 	return netip.MustParseAddrPort(c.LocalAddr().String()).Addr()
 }
 
+// Baidu ip4 for www.baidu.com
 func Baidu() netip.Addr {
-	ips, err := net.LookupIP("baidu.com")
+	ips, err := net.LookupIP("www.baidu.com")
 	if err != nil {
 		panic(err)
 	}
