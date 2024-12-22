@@ -87,8 +87,20 @@ func (f Frames) MarshalJSON() ([]byte, error) {
 	return f.AppendJSON(make([]byte, 0, 256))
 }
 
+type trace interface{ StackTrace() errors.StackTrace }
+
+func WithTrace(err error) bool {
+	for e := err; e != nil; {
+		if _, ok := e.(trace); ok {
+			return true
+		}
+		e = errors.Unwrap(e)
+	}
+	return false
+}
+
 //go:noinline
-func ConcatTraceAndCallers(err error, callSkip int) Frames {
+func ConcatTraceAndCallers(err error, callSkip int) (fs Frames) {
 	pcPtr := pcPool.Get().(*[]uintptr)
 	pc := *pcPtr
 	defer func() {
@@ -97,7 +109,6 @@ func ConcatTraceAndCallers(err error, callSkip int) Frames {
 	}()
 
 	// get err with stack trace, only hit innermost
-	type trace interface{ StackTrace() errors.StackTrace }
 	var t trace
 	for e := err; e != nil; {
 		if e1, ok := e.(trace); ok {
