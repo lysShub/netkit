@@ -64,6 +64,7 @@ func NotFound(err error) bool {
 	}
 }
 
+func ConnectResed(err error) bool   { return connectResed(err) }
 func ConnectRefused(err error) bool { return connectRefused(err) }
 func NetworkUnreach(err error) bool { return networkUnreach(err) }
 func BuffTooSmall(err error) bool   { return buffTooSmall(err) }

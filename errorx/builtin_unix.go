@@ -9,6 +9,12 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+var ErrConnectReset = unix.ECONNRESET
+
+func connectResed(err error) bool {
+	return errors.Is(err, unix.ECONNRESET)
+}
+
 var ErrConnectRefused = unix.ECONNREFUSED
 
 func connectRefused(err error) bool {

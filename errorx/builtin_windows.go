@@ -9,6 +9,12 @@ import (
 	"golang.org/x/sys/windows"
 )
 
+var ErrConnectReset = windows.WSAECONNRESET
+
+func connectResed(err error) bool {
+	return errors.Is(err, windows.WSAECONNRESET)
+}
+
 var ErrConnectRefused = windows.WSAECONNREFUSED
 
 func connectRefused(err error) bool {
