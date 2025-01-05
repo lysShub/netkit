@@ -46,7 +46,7 @@ func Test_Builtin(t *testing.T) {
 }
 
 func Test_EmptyErr(t *testing.T) {
-	require.NotEqual(t, uintptr(unsafe.Pointer(&EmptyErr)), uintptr(unsafe.Pointer(&_emptyErr)))
+	require.NotEqual(t, uintptr(unsafe.Pointer(&ErrEmpty)), uintptr(unsafe.Pointer(&_emptyErr)))
 	require.False(t, _emptyErr == nil)
-	require.False(t, EmptyErr == nil)
+	require.False(t, ErrEmpty == nil)
 }

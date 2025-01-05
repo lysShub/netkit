@@ -81,7 +81,7 @@ type emptyErr struct{}
 var _emptyErr error = emptyErr{}
 
 // empty but not is nil error
-var EmptyErr error = _emptyErr
+var ErrEmpty error = _emptyErr
 
 func (emptyErr) Error() string { return "" }
 
