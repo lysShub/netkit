@@ -55,6 +55,8 @@ func UnwrapTo[To any](err error) To {
 	}
 }
 
+type notfoundErr struct{ error }
+
 func NotFound(err error) bool {
 	timeout := UnwrapTo[interface{ Timeout() bool }](err)
 	if timeout == nil {
@@ -63,6 +65,15 @@ func NotFound(err error) bool {
 		return timeout.Timeout()
 	}
 }
+func WrapNotfound(err error) error {
+	if err == nil {
+		return nil
+	}
+	return &notfoundErr{error: err}
+}
+func (t *notfoundErr) Error() string  { return t.error.Error() }
+func (t *notfoundErr) Unwrap() error  { return t.error }
+func (t *notfoundErr) NotFound() bool { return true }
 
 func ConnectResed(err error) bool   { return connectResed(err) }
 func ConnectRefused(err error) bool { return connectRefused(err) }
