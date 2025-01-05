@@ -75,6 +75,16 @@ func (t *notfoundErr) Error() string  { return t.error.Error() }
 func (t *notfoundErr) Unwrap() error  { return t.error }
 func (t *notfoundErr) NotFound() bool { return true }
 
+type emptyErr struct{}
+
+// used by CloseErr
+var _emptyErr error = emptyErr{}
+
+// empty but not is nil error
+var EmptyErr error = _emptyErr
+
+func (emptyErr) Error() string { return "" }
+
 func ConnectResed(err error) bool   { return connectResed(err) }
 func ConnectRefused(err error) bool { return connectRefused(err) }
 func NetworkUnreach(err error) bool { return networkUnreach(err) }

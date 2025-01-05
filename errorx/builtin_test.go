@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"testing"
 	"time"
+	"unsafe"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
@@ -42,4 +43,10 @@ func Test_Builtin(t *testing.T) {
 	require.True(t, ConnectRefused(ErrConnectRefused))
 	require.True(t, NetworkUnreach(ErrNetworkUnreach))
 	require.True(t, BuffTooSmall(ErrBuffTooSmall))
+}
+
+func Test_EmptyErr(t *testing.T) {
+	require.NotEqual(t, uintptr(unsafe.Pointer(&EmptyErr)), uintptr(unsafe.Pointer(&_emptyErr)))
+	require.False(t, _emptyErr == nil)
+	require.False(t, EmptyErr == nil)
 }
