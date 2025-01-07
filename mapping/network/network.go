@@ -62,7 +62,7 @@ func Process(laddr netip.AddrPort, proto uint8) (e Elem, err error) {
 
 	if err = n.visit(proto, func(es []Elem) {
 		i := slices.IndexFunc(es, func(e Elem) bool { return equal(e.Laddr, laddr) })
-		if i > 0 {
+		if i >= 0 {
 			e = es[i]
 		}
 	}); err != nil {
@@ -72,6 +72,32 @@ func Process(laddr netip.AddrPort, proto uint8) (e Elem, err error) {
 		return Elem{}, mapping.ErrNotRecord{}
 	}
 	return e, nil
+}
+
+func AsyncProcess(laddr netip.AddrPort, proto uint8) (e Elem, err error) {
+	if !laddr.Addr().Is4() {
+		return Elem{}, errors.Errorf("only support ipv4 %s", laddr.Addr().String())
+	}
+	n, err := New()
+	if err != nil {
+		return Elem{}, err
+	}
+
+	if err = n.visit(proto, func(es []Elem) {
+		i := slices.IndexFunc(es, func(e Elem) bool { return equal(e.Laddr, laddr) })
+		if i >= 0 {
+			e = es[i]
+		}
+	}); err != nil {
+		return Elem{}, err
+	}
+
+	if e == (Elem{}) {
+		go func() { n.Upgrade(proto) }()
+		return Elem{}, mapping.ErrNotRecord{}
+	} else {
+		return e, nil
+	}
 }
 
 func equal(a, b netip.AddrPort) bool {

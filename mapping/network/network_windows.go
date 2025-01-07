@@ -95,7 +95,8 @@ func (n *network) visit(proto uint8, fn func(es []Elem)) error {
 }
 
 type updater struct {
-	mu sync.Mutex
+	mu         sync.Mutex
+	upgradeing bool
 
 	tcptable netcall.MibTcpTableOwnerPid
 	udptable netcall.MibUdpTableOwnerPid
@@ -125,6 +126,12 @@ func newUpgrader() *updater {
 func (u *updater) Upgrade(proto uint8, n *network) error {
 	u.mu.Lock()
 	defer u.mu.Unlock()
+	if u.upgradeing {
+		return nil
+	} else {
+		u.upgradeing = true
+		defer func() { u.upgradeing = false }()
+	}
 
 	clear(u.pidpathCache)
 	switch proto {
