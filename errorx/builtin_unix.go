@@ -1,5 +1,5 @@
-//go:build aix || darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris || zos
-// +build aix darwin dragonfly freebsd linux netbsd openbsd solaris zos
+//go:build unix
+// +build unix
 
 package errorx
 
@@ -37,4 +37,10 @@ var ErrAddrNotAvail = unix.EADDRNOTAVAIL
 
 func addrNotAvail(err error) bool {
 	return errors.Is(err, unix.EADDRNOTAVAIL)
+}
+
+var ErrNetTimeout = unix.ETIMEDOUT
+
+func netTimeout(err error) bool {
+	return errors.Is(err, ErrNetTimeout)
 }

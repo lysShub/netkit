@@ -41,3 +41,9 @@ var ErrAddrNotAvail = windows.WSAEADDRNOTAVAIL
 func addrNotAvail(err error) bool {
 	return errors.Is(err, windows.WSAEADDRNOTAVAIL)
 }
+
+var ErrNetTimeout = windows.ERROR_TIMEOUT
+
+func netTimeout(err error) bool {
+	return errors.Is(err, ErrNetTimeout) || errors.Is(err, windows.WAIT_TIMEOUT)
+}

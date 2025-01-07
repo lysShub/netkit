@@ -90,3 +90,4 @@ func ConnectRefused(err error) bool { return connectRefused(err) }
 func NetworkUnreach(err error) bool { return networkUnreach(err) }
 func BuffTooSmall(err error) bool   { return buffTooSmall(err) }
 func AddrNotAvail(err error) bool   { return addrNotAvail(err) }
+func NetTimeout(err error) bool     { return netTimeout(err) }
