@@ -24,7 +24,7 @@ func connectRefused(err error) bool {
 var ErrNetworkUnreach = unix.ENETUNREACH
 
 func networkUnreach(err error) bool {
-	return errors.Is(err, unix.ENETUNREACH)
+	return errors.Is(err, unix.ENETUNREACH) || errors.Is(err, unix.EHOSTUNREACH)
 }
 
 var ErrBuffTooSmall = unix.ENOBUFS
