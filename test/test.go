@@ -1,6 +1,7 @@
 package test
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"encoding/hex"
@@ -8,6 +9,8 @@ import (
 	"math/rand"
 	"net"
 	"net/netip"
+	"runtime"
+	"strconv"
 	"testing"
 	"time"
 
@@ -452,4 +455,28 @@ func UDPCopy(t require.TestingT, conn net.Conn, mtu int) {
 		require.NoError(t, err)
 		require.Equal(t, n, m)
 	}
+}
+
+func GoroutineID() int {
+	buf := make([]byte, 32)
+	n := runtime.Stack(buf, false)
+	buf = buf[:n]
+	// goroutine 1 [running]: ...
+
+	var goroutinePrefix = []byte("goroutine ")
+	buf, ok := bytes.CutPrefix(buf, goroutinePrefix)
+	if !ok {
+		return 0
+	}
+
+	i := bytes.IndexByte(buf, ' ')
+	if i < 0 {
+		return 0
+	}
+
+	id, err := strconv.Atoi(string(buf[:i]))
+	if err != nil {
+		return 0
+	}
+	return id
 }
