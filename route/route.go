@@ -41,9 +41,7 @@ func (t Table) String() string {
 	return p.string()
 }
 
-func (t Table) Sort() {
-	sort.Sort(tableSortImpl(t))
-}
+func (t Table) Sort() { sort.Sort(tableSortImpl(t)) }
 
 type tableSortImpl Table
 

@@ -37,7 +37,7 @@ func GetIfidx(t *testing.T, addr netip.Addr) int32 {
 }
 
 func LocIP() netip.Addr {
-	c, err := net.DialUDP("udp", nil, &net.UDPAddr{IP: []byte{8, 8, 8, 8}, Port: 53})
+	c, err := net.Dial("udp4", "baidu.com:80")
 	if err != nil {
 		panic(err)
 	}

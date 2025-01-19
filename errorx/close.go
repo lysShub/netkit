@@ -12,8 +12,9 @@ type CloseErr struct {
 	err atomic.Pointer[error]
 }
 
-func (c *CloseErr) Close(fn func() (errs []error)) (err error) {
+func (c *CloseErr) Close(fn func() (errs []error)) error {
 	if c.err.CompareAndSwap(nil, &_emptyErr) {
+		var err error
 		if fn != nil {
 			for _, e := range fn() {
 				if e != nil && err == nil {
@@ -25,19 +26,19 @@ func (c *CloseErr) Close(fn func() (errs []error)) (err error) {
 
 		if err != nil {
 			c.err.Store(&err)
+			return err
 		} else {
-			e := errors.WithStack(net.ErrClosed)
-			c.err.Store(&e)
+			err = errors.WithStack(net.ErrClosed)
+			c.err.Store(&err)
+			return nil // not err
 		}
-		return err
 	} else {
 		for {
-			p := c.err.Load()
-			if p == &_emptyErr {
+			if c.err.Load() == &_emptyErr {
 				runtime.Gosched()
 				continue
 			}
-			return (*p)
+			return (*c.err.Load())
 		}
 	}
 }
