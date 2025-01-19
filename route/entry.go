@@ -62,6 +62,35 @@ func (e Entry) string(p *stringer) {
 }
 func (e Entry) Raw() EntryRaw { return e.raw }
 
+// Less 再路由匹配时有更低的优先级
+func (e Entry) Less(v Entry) int { return less(e, v) }
+
+func less(i, j Entry) int {
+	// 前缀越短优先级越小
+	pi, pj := i.Dest.Bits(), j.Dest.Bits()
+	if pi < pj {
+		return 1
+	} else if pi > pj {
+		return -1
+	} else {
+		// 跳数越大越优先级小
+		if i.Metric > j.Metric {
+			return 1
+		} else if i.Metric < j.Metric {
+			return -1
+		} else {
+			// 倾向于匹配0.0.0.0/0而不是1.0.0.0/0
+			if i.Dest.Addr().Less(j.Dest.Addr()) {
+				return -1
+			} else if i.Dest.Addr() == j.Dest.Addr() {
+				return 0
+			} else {
+				return 1
+			}
+		}
+	}
+}
+
 const printCols = 4
 
 type stringer struct {

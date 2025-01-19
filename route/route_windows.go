@@ -5,7 +5,6 @@ package route
 
 import (
 	"net/netip"
-	"sort"
 
 	netcall "github.com/lysShub/netkit/syscall"
 	"github.com/pkg/errors"
@@ -68,7 +67,7 @@ func GetTable() (table Table, err error) {
 	if len(table) == 0 {
 		return nil, errors.New("can't get route table")
 	}
-	sort.Sort(tableSortImpl(table))
+	table.Sort()
 	return table, nil
 }
 

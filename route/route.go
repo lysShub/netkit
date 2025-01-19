@@ -2,7 +2,7 @@ package route
 
 import (
 	"net/netip"
-	"sort"
+	"slices"
 )
 
 type Table []Entry
@@ -41,22 +41,8 @@ func (t Table) String() string {
 	return p.string()
 }
 
-func (t Table) Sort() { sort.Sort(tableSortImpl(t)) }
-
-type tableSortImpl Table
-
-func (es tableSortImpl) Len() int { return len(es) }
-func (es tableSortImpl) Less(i, j int) bool {
-	bi, bj := es[i].Dest.Bits(), es[j].Dest.Bits()
-	if bi <= bj {
-		if bi == bj {
-			if es[i].Metric == es[j].Metric {
-				return es[i].Dest.Addr().Less(es[j].Dest.Addr())
-			}
-			return es[i].Metric > es[j].Metric
-		}
-		return true
-	}
-	return false
+func (t Table) Sort() {
+	slices.SortStableFunc(t, func(i, j Entry) int {
+		return -i.Less(j) // 倒序
+	})
 }
-func (es tableSortImpl) Swap(i, j int) { es[i], es[j] = es[j], es[i] }

@@ -107,6 +107,35 @@ func Test_Match2(t *testing.T) {
 	require.Equal(t, "192.168.31.46", e.Addr.String())
 }
 
+func Test_Match3(t *testing.T) {
+	var tb = route.Table{
+		{
+			Dest:      netip.PrefixFrom(netip.MustParseAddr("1.2.1.0"), 0),
+			Next:      netip.MustParseAddr("26.0.0.1"),
+			Interface: 11,
+			Addr:      netip.MustParseAddr("26.53.221.48"),
+			Metric:    25,
+		},
+		{
+			Dest:      netip.PrefixFrom(netip.MustParseAddr("1.2.2.0"), 0),
+			Next:      netip.MustParseAddr("192.168.31.1"),
+			Interface: 23,
+			Addr:      netip.MustParseAddr("192.168.31.46"),
+			Metric:    25,
+		},
+		{
+			Dest:      netip.PrefixFrom(netip.IPv4Unspecified(), 0),
+			Next:      netip.MustParseAddr("192.168.31.1"),
+			Interface: 23,
+			Addr:      netip.MustParseAddr("192.168.31.46"),
+			Metric:    25,
+		},
+	}
+	tb.Sort()
+
+	require.Equal(t, "0.0.0.0/0", tb[2].Dest.String())
+}
+
 func Test_Loopback(t *testing.T) {
 	tb := unmarshal(t, table)
 
