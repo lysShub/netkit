@@ -33,7 +33,7 @@ var ErrBuffTooSmall = windows.ERROR_INSUFFICIENT_BUFFER
 
 func buffTooSmall(err error) bool {
 	return errors.Is(err, windows.ERROR_INSUFFICIENT_BUFFER) ||
-		errors.Is(err, windows.ERROR_DS_USER_BUFFER_TO_SMALL)
+		errors.Is(err, windows.WSAENOBUFS)
 }
 
 var ErrAddrNotAvail = windows.WSAEADDRNOTAVAIL
