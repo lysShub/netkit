@@ -46,7 +46,7 @@ type messageErr struct {
 }
 
 func Message(err error, msgs ...string) error {
-	if err == nil {
+	if err == nil && len(msgs) == 0 {
 		return nil
 	} else {
 		if len(msgs) > 0 {
@@ -59,6 +59,13 @@ func Message(err error, msgs ...string) error {
 func IsMessage(err error) bool {
 	message := UnwrapTo[interface{ Message() string }](err)
 	return message == nil
+}
+func (m *messageErr) Error() string {
+	if m.error != nil {
+		return m.error.Error()
+	} else {
+		return m.msg
+	}
 }
 func (m *messageErr) Message() string { return m.msg }
 func (t *messageErr) Unwrap() error   { return t.error }
