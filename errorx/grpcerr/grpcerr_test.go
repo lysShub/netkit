@@ -14,8 +14,10 @@ func Test_FromError(t *testing.T) {
 	var err = status.Error(codes.InvalidArgument, msg)
 	err = errors.WithStack(err)
 
-	s, ok := FromError(err)
-	require.True(t, ok)
-	require.Equal(t, codes.InvalidArgument, s.Code())
-	require.Equal(t, msg, s.Message())
+	{
+		s, ok := FromError(err)
+		require.True(t, ok)
+		require.Equal(t, codes.InvalidArgument, s.Code())
+		require.Equal(t, msg, s.Message())
+	}
 }
