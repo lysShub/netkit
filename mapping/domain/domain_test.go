@@ -117,7 +117,7 @@ func TestXxxx(t *testing.T) {
 		}
 
 		names, err := RDNS(dst)
-		require.True(t, err == nil || errorx.Temporary(err), err)
+		require.True(t, err == nil || errorx.IsTemporary(err), err)
 
 		dup[dst] = len(names) > 0
 		if !has {

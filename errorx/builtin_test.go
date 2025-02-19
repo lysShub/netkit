@@ -13,24 +13,24 @@ import (
 
 func Test_Temporary(t *testing.T) {
 	var e1 = errors.WithMessage(&net.DNSError{IsTemporary: true}, "temp")
-	require.True(t, Temporary(e1))
+	require.True(t, IsTemporary(e1))
 
 	var e2 = errors.WithStack(errors.New("error"))
-	require.False(t, Temporary(e2))
+	require.False(t, IsTemporary(e2))
 
 	var e3 error = nil
-	require.False(t, Temporary(e3))
+	require.False(t, IsTemporary(e3))
 }
 
 func Test_Timeout(t *testing.T) {
 	var e1 = errors.WithMessage(&net.DNSError{IsTimeout: true}, "temp")
-	require.True(t, Timeout(e1))
+	require.True(t, IsTimeout(e1))
 
 	var e2 = errors.WithStack(errors.New("error"))
-	require.False(t, Timeout(e2))
+	require.False(t, IsTimeout(e2))
 
 	var e3 error = nil
-	require.False(t, Timeout(e3))
+	require.False(t, IsTimeout(e3))
 }
 
 func Test_ConnectRefused(t *testing.T) {

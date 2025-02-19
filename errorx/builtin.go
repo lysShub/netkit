@@ -2,7 +2,13 @@ package errorx
 
 type temporaryErr struct{ error }
 
-func Temporary(err error) bool {
+func Temporary(err error) error {
+	if err == nil {
+		return nil
+	}
+	return &temporaryErr{error: err}
+}
+func IsTemporary(err error) bool {
 	temp := UnwrapTo[interface{ Temporary() bool }](err)
 	if temp == nil {
 		return false
@@ -10,20 +16,19 @@ func Temporary(err error) bool {
 		return temp.Temporary()
 	}
 }
-
-func WrapTemp(err error) error {
-	if err == nil {
-		return nil
-	}
-	return &temporaryErr{error: err}
-}
 func (t *temporaryErr) Error() string   { return t.error.Error() }
 func (t *temporaryErr) Unwrap() error   { return t.error }
 func (t *temporaryErr) Temporary() bool { return true }
 
 type timeoutErr struct{ error }
 
-func Timeout(err error) bool {
+func Timeout(err error) error {
+	if err == nil {
+		return nil
+	}
+	return &timeoutErr{error: err}
+}
+func IsTimeout(err error) bool {
 	timeout := UnwrapTo[interface{ Timeout() bool }](err)
 	if timeout == nil {
 		return false
@@ -31,15 +36,32 @@ func Timeout(err error) bool {
 		return timeout.Timeout()
 	}
 }
-func WrapTimeout(err error) error {
-	if err == nil {
-		return nil
-	}
-	return &timeoutErr{error: err}
-}
 func (t *timeoutErr) Error() string { return t.error.Error() }
 func (t *timeoutErr) Unwrap() error { return t.error }
 func (t *timeoutErr) Timeout() bool { return true }
+
+type messageErr struct {
+	error
+	msg string
+}
+
+func Message(err error, msgs ...string) error {
+	if err == nil {
+		return nil
+	} else {
+		if len(msgs) > 0 {
+			return &messageErr{error: err, msg: msgs[0]}
+		} else {
+			return &messageErr{error: err, msg: err.Error()}
+		}
+	}
+}
+func IsMessage(err error) bool {
+	message := UnwrapTo[interface{ Message() string }](err)
+	return message == nil
+}
+func (m *messageErr) Message() string { return m.msg }
+func (t *messageErr) Unwrap() error   { return t.error }
 
 func UnwrapTo[To any](err error) To {
 	for {

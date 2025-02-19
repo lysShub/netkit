@@ -21,7 +21,7 @@ type divertCapture struct {
 }
 
 func newDivertCapture() (Capture, error) {
-	if err := divert.Load(divert.DLL); err != nil && !errorx.Temporary(err) {
+	if err := divert.Load(divert.DLL); err != nil && !errorx.IsTemporary(err) {
 		return nil, err
 	}
 
