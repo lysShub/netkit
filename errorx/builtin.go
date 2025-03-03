@@ -58,7 +58,10 @@ func Message(err error, msgs ...string) error {
 }
 func IsMessage(err error) string {
 	msg := UnwrapTo[interface{ Message() string }](err)
-	return msg.Message()
+	if msg != nil {
+		return msg.Message()
+	}
+	return ""
 }
 func (m *messageErr) Error() string {
 	if m.error != nil {
