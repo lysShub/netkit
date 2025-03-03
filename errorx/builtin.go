@@ -56,9 +56,9 @@ func Message(err error, msgs ...string) error {
 		}
 	}
 }
-func IsMessage(err error) bool {
-	message := UnwrapTo[interface{ Message() string }](err)
-	return message != nil
+func IsMessage(err error) string {
+	msg := UnwrapTo[interface{ Message() string }](err)
+	return msg.Message()
 }
 func (m *messageErr) Error() string {
 	if m.error != nil {
