@@ -33,7 +33,7 @@ type Elem struct {
 
 var (
 	once   sync.Once
-	global *network
+	global *Network
 )
 
 func Process(laddr netip.AddrPort, proto uint8) (e Elem, err error) {
@@ -105,7 +105,7 @@ func equal(a, b netip.AddrPort) bool {
 		(a.Addr() == b.Addr() || a.Addr().IsUnspecified() || b.Addr().IsUnspecified())
 }
 
-func Network(process string) (es []Elem, err error) {
+func List(process string) (es []Elem, err error) {
 	if process == "" {
 		return es, err
 	}

@@ -12,7 +12,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-type network struct {
+type Network struct {
 	tcpMu sync.RWMutex
 	tcp   []Elem
 
@@ -22,7 +22,7 @@ type network struct {
 	*updater
 }
 
-func New() (n *network, err error) {
+func New() (n *Network, err error) {
 	once.Do(func() {
 		global, err = newNetwork()
 	})
@@ -33,14 +33,14 @@ func New() (n *network, err error) {
 	return global, nil
 }
 
-func newNetwork() (*network, error) {
-	var n = &network{
+func newNetwork() (*Network, error) {
+	var n = &Network{
 		updater: newUpgrader(),
 	}
 	return n, nil
 }
 
-func (n *network) Upgrade(proto uint8) error {
+func (n *Network) Upgrade(proto uint8) error {
 	switch proto {
 	case syscall.IPPROTO_TCP, syscall.IPPROTO_UDP, 0:
 	default:
@@ -49,7 +49,7 @@ func (n *network) Upgrade(proto uint8) error {
 	return n.updater.Upgrade(proto, n)
 }
 
-func (n *network) Query(proto uint8, fn func(Elem) (stop bool)) error {
+func (n *Network) Query(proto uint8, fn func(Elem) (stop bool)) error {
 	switch proto {
 	case syscall.IPPROTO_TCP, syscall.IPPROTO_UDP, 0:
 	default:
@@ -78,7 +78,7 @@ func (n *network) Query(proto uint8, fn func(Elem) (stop bool)) error {
 	return nil
 }
 
-func (n *network) visit(proto uint8, fn func(es []Elem)) error {
+func (n *Network) visit(proto uint8, fn func(es []Elem)) error {
 	switch proto {
 	case syscall.IPPROTO_TCP:
 		n.tcpMu.RLock()
@@ -123,7 +123,7 @@ func newUpgrader() *updater {
 	return u
 }
 
-func (u *updater) Upgrade(proto uint8, n *network) error {
+func (u *updater) Upgrade(proto uint8, n *Network) error {
 	u.mu.Lock()
 	defer u.mu.Unlock()
 	if u.upgradeing {
@@ -150,7 +150,7 @@ func (u *updater) Upgrade(proto uint8, n *network) error {
 	return nil
 }
 
-func (u *updater) upgradeTCP(n *network) error {
+func (u *updater) upgradeTCP(n *Network) error {
 	size := uint32(len(u.tcptable))
 	err := netcall.GetExtendedTcpTable(u.tcptable, &size, true)
 	if err != nil {
@@ -181,7 +181,7 @@ func (u *updater) upgradeTCP(n *network) error {
 	return nil
 }
 
-func (u *updater) upgradeUDP(n *network) error {
+func (u *updater) upgradeUDP(n *Network) error {
 	size := uint32(len(u.udptable))
 	err := netcall.GetExtendedUdpTable(u.udptable, &size, true)
 	if err != nil {
