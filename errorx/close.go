@@ -36,12 +36,15 @@ func (c *CloseErr) Close(fn func() (errs []error)) error {
 		return c.Error()
 	}
 }
+
+// Error 返回Close时的err, 没有Close时返回nil
 func (c *CloseErr) Error() (err error) {
 start:
-	err = *c.err.Load()
-	if err == _emptyErr {
+	if e := c.err.Load(); e == &_emptyErr {
 		time.Sleep(time.Millisecond)
 		goto start
+	} else if e != nil {
+		err = *c.err.Load()
 	}
 	return err
 }

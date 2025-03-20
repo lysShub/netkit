@@ -50,7 +50,12 @@ func Test_CloseErr(t *testing.T) {
 		require.NotContains(t, err.Error(), "5678")
 	})
 
-	t.Run("closing时调用Error()、Close()", func(t *testing.T) {
+	t.Run("直接调用Error()、Closed()", func(t *testing.T) {
+		var closeErr errorx.CloseErr
+		require.False(t, closeErr.Closed())
+		require.NoError(t, closeErr.Error())
+	})
+	t.Run("closing时调用Error()、Closed()", func(t *testing.T) {
 		var closeErr errorx.CloseErr
 
 		var wg = &sync.WaitGroup{}
@@ -70,6 +75,13 @@ func Test_CloseErr(t *testing.T) {
 		start := time.Now()
 		require.True(t, errors.Is(closeErr.Error(), net.ErrClosed))
 		require.InDelta(t, time.Since(start), time.Second, float64(time.Millisecond*100))
+	})
+	t.Run("close后调用Error()、Closed()", func(t *testing.T) {
+		var closeErr errorx.CloseErr
+		closeErr.Close(nil)
+
+		require.True(t, closeErr.Closed())
+		require.True(t, errors.Is(closeErr.Error(), net.ErrClosed))
 	})
 
 	t.Run("closing时调用Close()", func(t *testing.T) {
