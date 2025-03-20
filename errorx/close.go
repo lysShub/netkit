@@ -2,8 +2,8 @@ package errorx
 
 import (
 	"net"
-	"runtime"
 	"sync/atomic"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -33,14 +33,16 @@ func (c *CloseErr) Close(fn func() (errs []error)) error {
 			return nil // not err
 		}
 	} else {
-		for {
-			if c.err.Load() == &_emptyErr {
-				runtime.Gosched()
-				continue
-			}
-			return (*c.err.Load())
-		}
+		return c.Error()
 	}
 }
-
+func (c *CloseErr) Error() (err error) {
+start:
+	err = *c.err.Load()
+	if err == _emptyErr {
+		time.Sleep(time.Millisecond)
+		goto start
+	}
+	return err
+}
 func (c *CloseErr) Closed() bool { return c.err.Load() != nil }
