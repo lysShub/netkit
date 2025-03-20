@@ -119,6 +119,7 @@ func (emptyErr) Error() string { return "" }
 
 func ConnectResed(err error) bool   { return connectResed(err) }
 func ConnectRefused(err error) bool { return connectRefused(err) }
+func ConnectAborted(err error) bool { return connectAborted(err) }
 func NetworkUnreach(err error) bool { return networkUnreach(err) }
 func BuffTooSmall(err error) bool   { return buffTooSmall(err) }
 func AddrNotAvail(err error) bool   { return addrNotAvail(err) }

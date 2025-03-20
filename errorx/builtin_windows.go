@@ -22,6 +22,12 @@ func connectRefused(err error) bool {
 		errors.Is(err, windows.ERROR_CONNECTION_REFUSED)
 }
 
+var ErrConnectAborted = windows.WSAECONNABORTED
+
+func connectAborted(err error) bool {
+	return errors.Is(err, windows.WSAECONNABORTED)
+}
+
 var ErrNetworkUnreach = windows.WSAENETUNREACH
 
 func networkUnreach(err error) bool {

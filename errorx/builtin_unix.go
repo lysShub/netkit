@@ -21,6 +21,12 @@ func connectRefused(err error) bool {
 	return errors.Is(err, unix.ECONNREFUSED)
 }
 
+var ErrConnectAborted = unix.ECONNABORTED
+
+func connectAborted(err error) bool {
+	return errors.Is(err, unix.ECONNABORTED)
+}
+
 var ErrNetworkUnreach = unix.ENETUNREACH
 
 func networkUnreach(err error) bool {
