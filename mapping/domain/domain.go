@@ -19,10 +19,10 @@ import (
 
 var (
 	once   sync.Once
-	global *cache
+	global *Cache
 )
 
-type cache struct {
+type Cache struct {
 	sniffer   Sniffer
 	assembler *TcpAssembler
 
@@ -32,7 +32,7 @@ type cache struct {
 	closeErr errorx.CloseErr
 }
 
-func New() (cache *cache, err error) {
+func New() (cache *Cache, err error) {
 	sniffer, err := newSniffer()
 	if err != nil {
 		return nil, err
@@ -40,15 +40,15 @@ func New() (cache *cache, err error) {
 	return NewWithSniffer(sniffer), nil
 }
 
-func NewWithSniffer(sniffer Sniffer) *cache {
+func NewWithSniffer(sniffer Sniffer) *Cache {
 	once.Do(func() {
 		global = newCache(sniffer)
 	})
 	return global
 }
 
-func newCache(sniffer Sniffer) *cache {
-	var c = &cache{
+func newCache(sniffer Sniffer) *Cache {
+	var c = &Cache{
 		sniffer:   sniffer,
 		assembler: NewTcpAssembler(),
 		addrs:     map[netip.Addr][]string{},
@@ -59,7 +59,7 @@ func newCache(sniffer Sniffer) *cache {
 	return c
 }
 
-func (c *cache) service() (_ error) {
+func (c *Cache) service() (_ error) {
 	var ip = make([]byte, 1536)
 	for {
 		n, err := c.sniffer.Sniff(ip[:cap(ip)])
@@ -93,7 +93,7 @@ func (c *cache) service() (_ error) {
 	}
 }
 
-func (c *cache) put(msg []byte) error {
+func (c *Cache) put(msg []byte) error {
 	var m dns.Msg
 	if err := m.Unpack(msg); err != nil {
 		return errors.WithStack(err)
@@ -142,14 +142,14 @@ func unFqdn(s string) string {
 	}
 }
 
-func (c *cache) RDNS(a netip.Addr) (names []string) {
+func (c *Cache) RDNS(a netip.Addr) (names []string) {
 	c.mu.RLock()
 	names = c.addrs[a]
 	c.mu.RUnlock()
 	return names
 }
 
-func (c *cache) close(cause error) error {
+func (c *Cache) close(cause error) error {
 	return c.closeErr.Close(func() (errs []error) {
 		errs = append(errs, cause)
 		if c.sniffer != nil {
@@ -158,7 +158,7 @@ func (c *cache) close(cause error) error {
 		return errs
 	})
 }
-func (c *cache) Close() error { return c.close(nil) }
+func (c *Cache) Close() error { return c.close(nil) }
 
 func RDNS(addr netip.Addr) (names []string, err error) {
 	cache, err := New()
