@@ -4,7 +4,6 @@
 package domain
 
 import (
-	"fmt"
 	"net/netip"
 	"os"
 	"slices"
@@ -12,8 +11,6 @@ import (
 	"testing"
 
 	"github.com/google/gopacket/pcapgo"
-	"github.com/lysShub/divert-go"
-	"github.com/lysShub/netkit/errorx"
 	"github.com/stretchr/testify/require"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
@@ -96,32 +93,4 @@ func Test_Cache(t *testing.T) {
 		}
 	})
 
-}
-
-func TestXxxx(t *testing.T) {
-	var b = make([]byte, 1536)
-
-	divert.MustLoad(divert.DLL)
-	d, err := divert.Open("outbound and !loopback and ip and tcp", divert.Network, 0, divert.ReadOnly|divert.Sniff)
-	require.NoError(t, err)
-
-	var dup = map[netip.Addr]bool{}
-	for {
-		n, err := d.Recv(b[:cap(b)], nil)
-		require.NoError(t, err)
-
-		dst := netip.AddrFrom4(header.IPv4(b[:n]).DestinationAddress().As4())
-		var has, ok bool
-		if ok, has = dup[dst]; ok {
-			continue
-		}
-
-		names, err := RDNS(dst)
-		require.True(t, err == nil || errorx.IsTemporary(err), err)
-
-		dup[dst] = len(names) > 0
-		if !has {
-			fmt.Println(dst.String(), names)
-		}
-	}
 }

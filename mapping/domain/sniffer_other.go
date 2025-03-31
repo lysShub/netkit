@@ -5,7 +5,7 @@ package domain
 
 import "github.com/pkg/errors"
 
-func newCapture() (Capture, error) {
+func newSniffer() (Sniffer, error) {
 	return nil, errors.New("not support")
 }
 

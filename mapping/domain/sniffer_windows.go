@@ -10,22 +10,22 @@ import (
 	"github.com/lysShub/netkit/errorx"
 )
 
-func newCapture() (Capture, error) {
-	return newDivertCapture()
+func newSniffer() (Sniffer, error) {
+	return newDivert()
 }
 
-type divertCapture struct {
+type divertSniffer struct {
 	handle *divert.Handle
 
 	closeErr errorx.CloseErr
 }
 
-func newDivertCapture() (Capture, error) {
+func newDivert() (Sniffer, error) {
 	if err := divert.Load(divert.DLL); err != nil && !errorx.IsTemporary(err) {
 		return nil, err
 	}
 
-	var g = &divertCapture{}
+	var g = &divertSniffer{}
 	var err error
 
 	var filter = "inbound and ip and remotePort=53"
@@ -36,7 +36,7 @@ func newDivertCapture() (Capture, error) {
 	return g, nil
 }
 
-func (c *divertCapture) close(cause error) error {
+func (c *divertSniffer) close(cause error) error {
 	return c.closeErr.Close(func() (errs []error) {
 		errs = append(errs, cause)
 		if c.handle != nil {
@@ -46,7 +46,7 @@ func (c *divertCapture) close(cause error) error {
 	})
 }
 
-func (c *divertCapture) Capture(ip []byte) (int, error) {
+func (c *divertSniffer) Sniffer(ip []byte) (int, error) {
 	n, err := c.handle.Recv(ip, nil)
 	if err != nil {
 		return 0, err
@@ -55,7 +55,7 @@ func (c *divertCapture) Capture(ip []byte) (int, error) {
 	}
 }
 
-func (c *divertCapture) Close() error { return c.close(nil) }
+func (c *divertSniffer) Close() error { return c.close(nil) }
 
 func cleanupDnsCache() {
 	exec.Command("ipconfig", "/flushdns").CombinedOutput()

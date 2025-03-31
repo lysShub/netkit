@@ -23,7 +23,7 @@ var (
 )
 
 type cache struct {
-	capture   Capture
+	sniffer   Sniffer
 	assembler *TcpAssembler
 
 	mu    sync.RWMutex
@@ -33,40 +33,36 @@ type cache struct {
 }
 
 func New() (cache *cache, err error) {
-	once.Do(func() {
-		global, err = newCache()
-	})
+	sniffer, err := newSniffer()
 	if err != nil {
-		once = sync.Once{}
 		return nil, err
-	} else if global.closeErr.Closed() {
-		once = sync.Once{}
-		return nil, global.closeErr.Close(nil)
 	}
-	return global, nil
+	return NewWithSniffer(sniffer), nil
 }
 
-func newCache() (*cache, error) {
+func NewWithSniffer(sniffer Sniffer) *cache {
+	once.Do(func() {
+		global = newCache(sniffer)
+	})
+	return global
+}
+
+func newCache(sniffer Sniffer) *cache {
 	var c = &cache{
+		sniffer:   sniffer,
 		assembler: NewTcpAssembler(),
 		addrs:     map[netip.Addr][]string{},
 	}
 
-	var err error
-	c.capture, err = newCapture()
-	if err != nil {
-		return nil, err
-	}
-
 	go c.service()
 	cleanupDnsCache()
-	return c, nil
+	return c
 }
 
 func (c *cache) service() (_ error) {
 	var ip = make([]byte, 1536)
 	for {
-		n, err := c.capture.Capture(ip[:cap(ip)])
+		n, err := c.sniffer.Sniffer(ip[:cap(ip)])
 		if err != nil {
 			return c.close(err)
 		} else {
@@ -156,8 +152,8 @@ func (c *cache) RDNS(a netip.Addr) (names []string) {
 func (c *cache) close(cause error) error {
 	return c.closeErr.Close(func() (errs []error) {
 		errs = append(errs, cause)
-		if c.capture != nil {
-			errs = append(errs, c.capture.Close())
+		if c.sniffer != nil {
+			errs = append(errs, c.sniffer.Close())
 		}
 		return errs
 	})
