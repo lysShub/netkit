@@ -46,7 +46,7 @@ func (c *divertSniffer) close(cause error) error {
 	})
 }
 
-func (c *divertSniffer) Sniffer(ip []byte) (int, error) {
+func (c *divertSniffer) Sniff(ip []byte) (int, error) {
 	n, err := c.handle.Recv(ip, nil)
 	if err != nil {
 		return 0, err

@@ -62,7 +62,7 @@ func newCache(sniffer Sniffer) *cache {
 func (c *cache) service() (_ error) {
 	var ip = make([]byte, 1536)
 	for {
-		n, err := c.sniffer.Sniffer(ip[:cap(ip)])
+		n, err := c.sniffer.Sniff(ip[:cap(ip)])
 		if err != nil {
 			return c.close(err)
 		} else {
