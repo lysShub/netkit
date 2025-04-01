@@ -96,7 +96,7 @@ func (c *Cache) service() (_ error) {
 func (c *Cache) put(msg []byte) error {
 	var m dns.Msg
 	if err := m.Unpack(msg); err != nil {
-		return errors.WithStack(err)
+		return nil
 	}
 
 	var cname = map[string]string{}
