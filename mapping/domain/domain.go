@@ -60,7 +60,7 @@ func newCache(sniffer Sniffer) *Cache {
 }
 
 func (c *Cache) service() (_ error) {
-	var ip = make([]byte, 1536)
+	var ip = make(header.IPv4, 1536)
 	for {
 		n, err := c.sniffer.Sniff(ip[:cap(ip)])
 		if err != nil {
@@ -69,10 +69,9 @@ func (c *Cache) service() (_ error) {
 			ip = ip[:n]
 		}
 
-		hdr := header.IPv4(ip)
-		switch proto := hdr.Protocol(); proto {
+		switch proto := ip.Protocol(); proto {
 		case syscall.IPPROTO_UDP:
-			i := hdr.HeaderLength() + header.UDPMinimumSize
+			i := ip.HeaderLength() + header.UDPMinimumSize
 			if err := c.put(ip[i:]); err != nil {
 				return c.close(err)
 			}

@@ -9,6 +9,7 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/tcpassembly"
 	"github.com/pkg/errors"
+	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
 type TcpAssembler struct {
@@ -26,7 +27,7 @@ func NewTcpAssembler() *TcpAssembler {
 	return a
 }
 
-func (a *TcpAssembler) Put(ip []byte, stamp time.Time) (data []byte, err error) {
+func (a *TcpAssembler) Put(ip header.IPv4, stamp time.Time) (data []byte, err error) {
 	defer a.garbage()
 	pkg := gopacket.NewPacket(ip, layers.LayerTypeIPv4, gopacket.Default)
 
