@@ -13,7 +13,6 @@ import (
 	"github.com/lysShub/netkit/errorx"
 	"github.com/lysShub/netkit/mapping"
 	"github.com/miekg/dns"
-	"github.com/pkg/errors"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
@@ -82,7 +81,6 @@ func (c *Cache) service() (_ error) {
 				}
 			}
 		default:
-			return c.close(errors.Errorf("unknown protocol %d", proto))
 		}
 	}
 }
