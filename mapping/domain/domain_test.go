@@ -59,7 +59,7 @@ func Test_Cache(t *testing.T) {
 	require.NoError(t, err)
 	defer c.Close()
 	for _, e := range dnsMsgs(t) {
-		require.NoError(t, c.put(e))
+		c.put(e)
 	}
 
 	t.Run("udp-cname", func(t *testing.T) {

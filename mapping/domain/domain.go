@@ -72,18 +72,13 @@ func (c *Cache) service() (_ error) {
 		switch proto := ip.Protocol(); proto {
 		case syscall.IPPROTO_UDP:
 			i := ip.HeaderLength() + header.UDPMinimumSize
-			if err := c.put(ip[i:]); err != nil {
-				return c.close(err)
-			}
+			c.put(ip[i:])
 		case syscall.IPPROTO_TCP:
 			data, err := c.assembler.Put(ip, time.Now())
 			if err != nil {
-				return c.close(err)
-			} else if len(data) > 0 {
+			} else {
 				for _, msg := range RawDnsOverTcp(data).Msgs() {
-					if err := c.put(msg); err != nil {
-						return c.close(err)
-					}
+					c.put(msg)
 				}
 			}
 		default:
@@ -92,10 +87,10 @@ func (c *Cache) service() (_ error) {
 	}
 }
 
-func (c *Cache) put(msg []byte) error {
+func (c *Cache) put(msg []byte) {
 	var m dns.Msg
 	if err := m.Unpack(msg); err != nil {
-		return nil
+		return
 	}
 
 	var cname = map[string]string{}
@@ -129,7 +124,6 @@ func (c *Cache) put(msg []byte) error {
 			continue
 		}
 	}
-	return nil
 }
 
 // unFqdn ref [dns.Fqdn]
