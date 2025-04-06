@@ -44,7 +44,7 @@ start:
 		time.Sleep(time.Millisecond)
 		goto start
 	} else if e != nil {
-		err = *c.err.Load()
+		err = *e
 	}
 	return err
 }

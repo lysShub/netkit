@@ -16,11 +16,6 @@ import (
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
 
-var (
-	once   sync.Once
-	global *Cache
-)
-
 type Cache struct {
 	sniffer   Sniffer
 	assembler *TcpAssembler
@@ -40,10 +35,7 @@ func New() (cache *Cache, err error) {
 }
 
 func NewWithSniffer(sniffer Sniffer) *Cache {
-	once.Do(func() {
-		global = newCache(sniffer)
-	})
-	return global
+	return newCache(sniffer)
 }
 
 func newCache(sniffer Sniffer) *Cache {
