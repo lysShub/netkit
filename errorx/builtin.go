@@ -90,11 +90,11 @@ func UnwrapTo[To any](err error) To {
 type notfoundErr struct{ error }
 
 func NotFound(err error) bool {
-	timeout := UnwrapTo[interface{ Timeout() bool }](err)
-	if timeout == nil {
+	notfound := UnwrapTo[interface{ NotFound() bool }](err)
+	if notfound == nil {
 		return false
 	} else {
-		return timeout.Timeout()
+		return notfound.NotFound()
 	}
 }
 func WrapNotfound(err error) error {

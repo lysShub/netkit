@@ -7,6 +7,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/lysShub/netkit/pid2path"
 	netcall "github.com/lysShub/netkit/syscall"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/windows"
@@ -101,23 +102,19 @@ type updater struct {
 	tcptable netcall.MibTcpTableOwnerPid
 	udptable netcall.MibUdpTableOwnerPid
 
-	procPathBuff []uint16
-
 	// todo: maybe conflict
 	pidpathCache map[uint32]string
 
-	dosCache *dosPathCache
+	pid2path *pid2path.Pid2Path
 }
 
 func newUpgrader() *updater {
 	var u = &updater{
-		procPathBuff: make([]uint16, syscall.MAX_LONG_PATH),
 		pidpathCache: map[uint32]string{},
 	}
 
 	var err error
-	u.dosCache, err = newDosPathCache()
-	if err != nil {
+	if u.pid2path, err = pid2path.New(); err != nil {
 		panic(err)
 	}
 	return u
@@ -217,92 +214,10 @@ func (u *updater) processPath(pid uint32) (path string, err error) {
 		return path, nil
 	}
 
-	switch pid {
-	case 0:
-		return SystemIdleName, nil
-	case 4:
-		return SystemName, nil
-	default:
-		fd, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, pid)
-		if err != nil {
-			if err == windows.ERROR_ACCESS_DENIED {
-				return SystemProcessName, nil
-			} else if err == windows.ERROR_INVALID_PARAMETER {
-				// todo: add log
-				fd, err = windows.OpenProcess(windows.PROCESS_QUERY_INFORMATION, false, pid)
-				if err != nil {
-					if err == windows.ERROR_ACCESS_DENIED {
-						return SystemProcessName, nil
-					}
-					return "", errors.Errorf("OpenProcess(%d): %s", pid, err.Error())
-				}
-			} else {
-				return "", errors.Errorf("OpenProcess(%d): %s", pid, err.Error())
-			}
-		}
-		defer windows.CloseHandle(fd)
-
-		if n, err := netcall.GetProcessImageFileNameW(fd, u.procPathBuff); err != nil {
-			return "", err
-		} else {
-			path, err = u.dosCache.Path(u.procPathBuff[:n])
-			if err != nil {
-				return "", err
-			}
-
-			u.pidpathCache[pid] = path
-			return path, nil
-		}
+	path, err = u.pid2path.Path(pid)
+	if err != nil {
+		return "", err
 	}
-}
-
-type dosPathCache struct {
-	// cache device-dos-name <=> device, eg:"\Device\HarddiskVolume1" <=> 'C'
-	cache map[string]byte
-}
-
-func newDosPathCache() (*dosPathCache, error) {
-	var c = &dosPathCache{
-		cache: map[string]byte{},
-	}
-
-	var b = make([]uint16, 512)
-	for d := 'A'; d < 'Z'; d++ {
-		err := netcall.QueryDosDeviceW(string([]rune{d, ':'}), b)
-		if err != nil {
-			if errors.Is(err, windows.ERROR_FILE_NOT_FOUND) {
-				continue
-			}
-			return nil, err
-		}
-		c.cache[windows.UTF16ToString(b)] = byte(d)
-	}
-	return c, nil
-}
-
-func (u *dosPathCache) Path(dosPath []uint16) (string, error) {
-	// get device dos path, eg: \Device\HarddiskVolume1
-	var n, i int
-	const slash = '\\'
-	for ; i < len(dosPath); i++ {
-		if dosPath[i] == slash {
-			if n += 1; n == 3 {
-				break
-			}
-		}
-	}
-	if i < 5 {
-		return "", errors.Errorf("dos path %s", windows.UTF16ToString(dosPath))
-	}
-
-	var dosprefix = windows.UTF16ToString(dosPath[:i])
-	d, has := u.cache[dosprefix]
-	if !has {
-		// todo: maybe update cache, disk hot swapping
-		return "", errors.Errorf("not found dos device：%s", windows.UTF16ToString(dosPath))
-	}
-
-	dosPath[i-1] = ':'
-	dosPath[i-2] = uint16(d)
-	return windows.UTF16ToString(dosPath[i-2:]), nil
+	u.pidpathCache[pid] = path
+	return path, nil
 }

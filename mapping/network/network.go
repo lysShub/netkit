@@ -13,7 +13,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/lysShub/netkit/mapping"
+	"github.com/lysShub/netkit/errorx"
 	"github.com/pkg/errors"
 )
 
@@ -69,7 +69,7 @@ func Process(laddr netip.AddrPort, proto uint8) (e Elem, err error) {
 		return Elem{}, err
 	}
 	if e == (Elem{}) {
-		return Elem{}, mapping.ErrNotRecord{}
+		return Elem{}, errorx.WrapNotfound(errorx.ErrEmpty)
 	}
 	return e, nil
 }
@@ -94,7 +94,7 @@ func AsyncProcess(laddr netip.AddrPort, proto uint8) (e Elem, err error) {
 
 	if e == (Elem{}) {
 		go func() { n.Upgrade(proto) }()
-		return Elem{}, mapping.ErrNotRecord{}
+		return Elem{}, errorx.WrapNotfound(errorx.ErrEmpty)
 	} else {
 		return e, nil
 	}

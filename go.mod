@@ -9,6 +9,7 @@ require (
 	github.com/lysShub/wintun-go v0.0.0-20240606130541-1acbbbe408f3
 	github.com/mdlayher/arp v0.0.0-20220512170110-6706a2966875
 	github.com/miekg/dns v1.1.61
+	github.com/mitchellh/go-ps v1.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.17.1

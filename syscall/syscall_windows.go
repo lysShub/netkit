@@ -387,14 +387,14 @@ func (r *Recvall) Recv(ip []byte) (int, error) {
 func (r *Recvall) Close() error { return errors.WithStack(windows.Close(r.fd)) }
 
 func QueryFullProcessImageNameW(proc windows.Handle, flags uint32, name []uint16, size *uint32) error {
-	r1, _, e := syscall.SyscallN(
+	_, _, e := syscall.SyscallN(
 		procQueryFullProcessImageNameW.Addr(),
 		uintptr(proc),
 		uintptr(flags),
 		uintptr(unsafe.Pointer(unsafe.SliceData(name))),
 		uintptr(unsafe.Pointer(size)),
 	)
-	if r1 == 0 {
+	if e != windows.NOERROR {
 		return errors.WithStack(e)
 	}
 	return nil
@@ -407,7 +407,7 @@ func GetProcessImageFileNameW(proc windows.Handle, name []uint16) (uint32, error
 		uintptr(unsafe.Pointer(unsafe.SliceData(name))),
 		uintptr(len(name)),
 	)
-	if r1 == 0 {
+	if e != windows.NOERROR {
 		return 0, errors.WithStack(e)
 	}
 	return uint32(r1), nil

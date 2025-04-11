@@ -5,6 +5,7 @@ package debug
 
 const debug = true
 
+// go -tags "debug" run .
 // disable:
 //
 // 	import "bou.ke/monkey"

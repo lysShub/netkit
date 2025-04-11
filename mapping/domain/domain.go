@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/lysShub/netkit/errorx"
-	"github.com/lysShub/netkit/mapping"
 	"github.com/miekg/dns"
 	"gvisor.dev/gvisor/pkg/tcpip/header"
 )
@@ -150,7 +149,7 @@ func RDNS(addr netip.Addr) (names []string, err error) {
 	}
 	names = cache.RDNS(addr)
 	if len(names) == 0 {
-		return nil, mapping.ErrNotRecord{}
+		return nil, errorx.WrapNotfound(errorx.ErrEmpty)
 	}
 	return names, nil
 }
